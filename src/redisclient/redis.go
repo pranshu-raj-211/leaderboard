@@ -11,7 +11,7 @@ var redisClient *redis.Client
 
 func InitRedis() {
 	redisClient = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 	})
@@ -43,7 +43,7 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error) {
 	scores, err := redisClient.ZRevRangeWithScores(ctx, key, 0, n-1).Result()
 
-	if err!=nil{
+	if err != nil {
 		return nil, fmt.Errorf("failed to fetch leaderboard")
 	}
 	return scores, nil

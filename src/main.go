@@ -3,21 +3,20 @@ package main
 import (
 	"fmt"
 	"leaderboard/src/backend"
-	"leaderboard/src/redisclient"
-	"leaderboard/src/metrics"
 	"leaderboard/src/config"
+	"leaderboard/src/metrics"
+	"leaderboard/src/redisclient"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-
-
 func main() {
 	if err := config.LoadConfig("config.yaml"); err != nil {
-        panic(err)
-    }
-    fmt.Println(config.AppConfig.Redis.Address)
+		panic(err)
+	}
+	fmt.Println(config.AppConfig.Redis.Address)
+	fmt.Println("Server starting on port 8080...")
 
 	redisclient.InitRedis()
 	metrics.InitMetrics()
