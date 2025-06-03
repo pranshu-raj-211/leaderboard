@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 
 	"go.uber.org/zap"
@@ -33,7 +34,7 @@ var logger *zap.Logger
 func LoadConfig(path string) error {
 	f, err := os.Open(path)
 	if err != nil {
-		Error("Failed to open config file", zap.Error(err))
+		Error("Failed to open config file", map[string]any{"err": err})
 		return err
 	}
 	defer f.Close()
@@ -41,7 +42,7 @@ func LoadConfig(path string) error {
 	decoder := yaml.NewDecoder(f)
 	var cfg Config
 	if err := decoder.Decode(&cfg); err != nil {
-		Error("Failed to open config file", zap.Error(err))
+		Error("Failed to open config file", map[string]any{"err": err})
 		return err
 	}
 
@@ -49,15 +50,28 @@ func LoadConfig(path string) error {
 	return nil
 }
 
-func Info(msg string, fields ...zap.Field) {
+func Info(msg string, data map[string]any) {
+	fields := make([]zap.Field, 0, len(data))
+	for k, v := range data {
+		fields = append(fields, zap.Any(k, v))
+	}
 	logger.Info(msg, fields...)
 }
 
-func Error(msg string, fields ...zap.Field) {
+func Error(msg string, data map[string]any) error {
+	fields := make([]zap.Field, 0, len(data))
+	for k, v := range data {
+		fields = append(fields, zap.Any(k, v))
+	}
 	logger.Error(msg, fields...)
+	return errors.New(msg)
 }
 
-func Fatal(msg string, fields ...zap.Field) {
+func Fatal(msg string, data map[string]any) {
+	fields := make([]zap.Field, 0, len(data))
+	for k, v := range data {
+		fields = append(fields, zap.Any(k, v))
+	}
 	logger.Fatal(msg, fields...)
 }
 
@@ -66,9 +80,24 @@ func InitLogger() {
 	config.EncoderConfig.TimeKey = "timestamp"
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
+	// TODO: move to config file
+	logFile := "app.log"
+	config.OutputPaths = []string{
+		"stdout",
+		logFile,
+	}
+	config.ErrorOutputPaths = []string{
+		"stderr",
+		logFile,
+	}
+
 	var err error
 	logger, err = config.Build()
 	if err != nil {
 		panic(err)
 	}
+}
+
+func GetLogger() *zap.Logger {
+	return logger
 }

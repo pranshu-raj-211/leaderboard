@@ -9,20 +9,26 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.uber.org/zap"
 )
 
 func main() {
 	config.InitLogger()
 	if err := config.LoadConfig("config.yaml"); err != nil {
-		config.Fatal("Failed to load config")
+		config.Fatal("Failed to load config", map[string]any{"err": err})
 	}
-	config.Info("Starting server", zap.String("redis_addr", config.AppConfig.Redis.Address), zap.Int("port", config.AppConfig.Server.Port))
+	config.Info("Starting server", map[string]any{
+		"Redis address": config.AppConfig.Redis.Address,
+		"Host":          config.AppConfig.Server.Host,
+		"Port":          config.AppConfig.Server.Port,
+	})
 
 	redisclient.InitRedis()
 	metrics.InitMetrics()
 
 	r := gin.Default()
+
+	r.Use(metrics.MetricsMiddleware())
+
 	r.POST("/submit-game", backend.SubmitGameResults)
 	r.GET("/stream-leaderboard", backend.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))

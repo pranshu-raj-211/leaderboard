@@ -2,7 +2,7 @@ package redisclient
 
 import (
 	"context"
-	"fmt"
+	"leaderboard/src/config"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -18,7 +18,8 @@ func InitRedis() {
 
 	_, err := redisClient.Ping(context.Background()).Result()
 	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to redis client: %v", err))
+		config.Error("Failed to connect to redis client", map[string]any{"Error": err})
+		panic("Trying recovery for redis client connection")
 	}
 }
 
@@ -35,7 +36,12 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 		redisClient.ZIncrBy(ctx, "leaderboard", 0.5, player1ID)
 		redisClient.ZIncrBy(ctx, "leaderboard", 0.5, player2ID)
 	default:
-		return fmt.Errorf("invalid result code")
+		return config.Error("Invalid game result, did not update leaderboard",
+			map[string]any{
+				"player1ID": player1ID,
+				"player2ID": player2ID,
+				"result":    result,
+			})
 	}
 	return nil
 }
@@ -44,7 +50,7 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 	scores, err := redisClient.ZRevRangeWithScores(ctx, key, 0, n-1).Result()
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch leaderboard")
+		return nil, config.Error("Failed to fetch top n players", map[string]any{})
 	}
 	return scores, nil
 }
