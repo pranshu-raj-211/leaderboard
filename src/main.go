@@ -9,14 +9,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
 )
 
 func main() {
+	config.InitLogger()
 	if err := config.LoadConfig("config.yaml"); err != nil {
-		panic(err)
+		config.Fatal("Failed to load config")
 	}
-	fmt.Println(config.AppConfig.Redis.Address)
-	fmt.Println("Server starting on port 8080...")
+	config.Info("Starting server", zap.String("redis_addr", config.AppConfig.Redis.Address), zap.Int("port", config.AppConfig.Server.Port))
 
 	redisclient.InitRedis()
 	metrics.InitMetrics()
@@ -26,5 +27,7 @@ func main() {
 	r.GET("/stream-leaderboard", backend.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	r.Run(":8080")
+	address := fmt.Sprintf("%s:%d", config.AppConfig.Server.Host, config.AppConfig.Server.Port)
+
+	r.Run(address)
 }
