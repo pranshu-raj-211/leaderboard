@@ -3,6 +3,7 @@ package backend
 import (
 	"encoding/json"
 	"fmt"
+	"leaderboard/src/config"
 	"leaderboard/src/metrics"
 	"leaderboard/src/redisclient"
 	"time"
@@ -27,7 +28,7 @@ func StreamLeaderboard(c *gin.Context) {
 	for {
 		select {
 		case <-ticker.C:
-			results, err := redisclient.GetTopNPlayers(c, "leaderboard", 10)
+			results, err := redisclient.GetTopNPlayers(c, "leaderboard", int64(config.AppConfig.Leaderboard.TopPlayersLimit))
 			if err != nil {
 				continue
 			}

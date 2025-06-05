@@ -11,12 +11,12 @@ import (
 var redisClient *redis.Client
 
 func InitRedis() {
-	maxRetries := 10
+	maxRetries := config.AppConfig.Redis.MaxRetries
 	for i := 0; i < maxRetries; i++ {
 		redisClient = redis.NewClient(&redis.Options{
-			Addr:     "redis:6379",
-			Password: "",
-			DB:       0,
+			Addr:     config.AppConfig.Redis.Address,
+			Password: config.AppConfig.Redis.Password,
+			DB:       config.AppConfig.Redis.DB,
 		})
 
 		_, err := redisClient.Ping(context.Background()).Result()

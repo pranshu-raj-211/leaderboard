@@ -11,9 +11,10 @@ import (
 
 type Config struct {
 	Redis struct {
-		Address  string `yaml:"addr"`
-		Password string `yaml:"password"`
-		DB       int    `yaml:"db"`
+		Address    string `yaml:"addr"`
+		Password   string `yaml:"password"`
+		DB         int    `yaml:"db"`
+		MaxRetries int    `yaml:"max_retries"`
 	} `yaml:"redis"`
 
 	Server struct {
