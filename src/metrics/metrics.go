@@ -30,7 +30,7 @@ var (
 			Help:    "Histogram of request durations.",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method", "endpoint"},
+		[]string{"method", "endpoint", "status"},
 	)
 	HTTPRequests = prometheus.NewCounterVec(
 		prometheus.CounterOpts{

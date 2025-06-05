@@ -54,3 +54,14 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 	}
 	return scores, nil
 }
+
+func GetPlayerScore(ctx context.Context, key string, playerID string) (int64, float64, error) {
+	player_info, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
+	if err != nil {
+		config.Error("Something went wrong while getting player stats", map[string]any{"player_id": playerID, "Error": err})
+	}
+	rank := player_info.Rank
+	score := player_info.Score
+	// TODO: checkout result of this operation, split to get rank and score
+	return rank, score, err
+}

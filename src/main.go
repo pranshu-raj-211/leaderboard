@@ -32,6 +32,8 @@ func main() {
 	r.POST("/submit-game", backend.SubmitGameResults)
 	r.GET("/stream-leaderboard", backend.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	r.GET("/player/:id/stats", backend.GetPlayerResults)
+	r.GET("/leaderboard", backend.GetLeaderboard)
 
 	address := fmt.Sprintf("%s:%d", config.AppConfig.Server.Host, config.AppConfig.Server.Port)
 
