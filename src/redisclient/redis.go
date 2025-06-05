@@ -3,6 +3,7 @@ package redisclient
 import (
 	"context"
 	"leaderboard/src/config"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -10,17 +11,22 @@ import (
 var redisClient *redis.Client
 
 func InitRedis() {
-	redisClient = redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: "",
-		DB:       0,
-	})
+	maxRetries := 10
+	for i := 0; i < maxRetries; i++ {
+		redisClient = redis.NewClient(&redis.Options{
+			Addr:     "redis:6379",
+			Password: "",
+			DB:       0,
+		})
 
-	_, err := redisClient.Ping(context.Background()).Result()
-	if err != nil {
-		config.Error("Failed to connect to redis client", map[string]any{"Error": err})
-		panic("Trying recovery for redis client connection")
+		_, err := redisClient.Ping(context.Background()).Result()
+		if err == nil {
+			return
+		}
+		config.Error("Failed to connect to redis client, retrying", map[string]any{"Error": err})
+		time.Sleep(2 * time.Second)
 	}
+	config.Fatal("Could not connect to redis client after 10 retries", map[string]any{})
 }
 
 func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result int) error {
@@ -49,7 +55,7 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error) {
 	scores, err := redisClient.ZRevRangeWithScores(ctx, key, 0, n-1).Result()
 
-	if err != nil {
+	if err == redis.Nil {
 		return nil, config.Error("Failed to fetch top n players", map[string]any{})
 	}
 	return scores, nil
@@ -57,7 +63,7 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 
 func GetPlayerScore(ctx context.Context, key string, playerID string) (int64, float64, error) {
 	player_info, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
-	if err != nil {
+	if err == redis.Nil {
 		config.Error("Something went wrong while getting player stats", map[string]any{"player_id": playerID, "Error": err})
 	}
 	rank := player_info.Rank
