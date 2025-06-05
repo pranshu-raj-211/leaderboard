@@ -17,9 +17,12 @@ func StreamLeaderboard(c *gin.Context) {
 	c.Writer.Flush()
 
 	metrics.ActiveSSEConnections.Inc()
+	defer metrics.ActiveSSEConnections.Dec()
 
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
+
+	var lastData []byte
 
 	for {
 		select {
@@ -30,11 +33,18 @@ func StreamLeaderboard(c *gin.Context) {
 			}
 
 			data, _ := json.Marshal(results)
-			fmt.Fprintf(c.Writer, "data: %s\n\n", data)
-			c.Writer.Flush()
+			if !jsonEqual(data, lastData) {
+				fmt.Fprintf(c.Writer, "data: %s\n\n", data)
+				c.Writer.Flush()
+				lastData = data
+			}
 
 		case <-c.Request.Context().Done():
 			return
 		}
 	}
+}
+
+func jsonEqual(a, b []byte) bool {
+	return string(a) == string(b)
 }
