@@ -17,6 +17,8 @@ func GetPlayerResults(c *gin.Context) {
 	rank, score, err := redisclient.GetPlayerScore(c, "leaderboard", playerID)
 	if err != nil {
 		config.Error("Error getting player score", map[string]any{"Error": err})
+		c.JSON(500, gin.H{"error": "could not fetch player stats"})
+		return
 	}
 	config.Info("Results from player stats api", map[string]any{"id": playerID, "rank": rank, "score": score})
 	c.JSON(http.StatusOK, gin.H{"rank": rank, "score": score})
