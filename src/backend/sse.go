@@ -37,10 +37,12 @@ func StreamLeaderboard(c *gin.Context) {
 			if !jsonEqual(data, lastData) {
 				fmt.Fprintf(c.Writer, "data: %s\n\n", data)
 				c.Writer.Flush()
+				metrics.SSEMessagesSent.Inc()
 				lastData = data
 			}
 
 		case <-c.Request.Context().Done():
+			metrics.DroppedSSEConnections.Inc()
 			return
 		}
 	}

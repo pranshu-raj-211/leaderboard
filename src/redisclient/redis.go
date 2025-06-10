@@ -3,6 +3,7 @@ package redisclient
 import (
 	"context"
 	"leaderboard/src/config"
+	"leaderboard/src/metrics"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -30,6 +31,11 @@ func InitRedis() {
 }
 
 func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result int) error {
+	start := time.Now()
+	defer func() {
+		metrics.RedisLatency.Observe(time.Since(start).Seconds())
+	}()
+	updateStart := time.Now()
 	switch result {
 	case 0:
 		//player 1 wins
@@ -49,10 +55,16 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 				"result":    result,
 			})
 	}
+	metrics.LeaderboardUpdateDuration.Observe(time.Since(updateStart).Seconds())
 	return nil
 }
 
 func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error) {
+	start := time.Now()
+	defer func() {
+		metrics.RedisLatency.Observe(time.Since(start).Seconds())
+	}()
+
 	scores, err := redisClient.ZRevRangeWithScores(ctx, key, 0, n-1).Result()
 
 	if err == redis.Nil {
@@ -62,12 +74,16 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 }
 
 func GetPlayerScore(ctx context.Context, key string, playerID string) (int64, float64, error) {
+	start := time.Now()
+	defer func() {
+		metrics.RedisLatency.Observe(time.Since(start).Seconds())
+	}()
+
 	player_info, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
 	if err == redis.Nil {
 		config.Error("Something went wrong while getting player stats", map[string]any{"player_id": playerID, "Error": err})
 	}
 	rank := player_info.Rank
 	score := player_info.Score
-	// TODO: checkout result of this operation, split to get rank and score
 	return rank, score, err
 }

@@ -11,7 +11,6 @@ import (
 )
 
 func SubmitGameResults(c *gin.Context) {
-	metrics.GameSubmissions.Inc()
 	var game models.GameResult
 	if err := c.ShouldBindJSON(&game); err != nil {
 		config.Error("Invalid JSON received from game server", map[string]any{"Error": err})
@@ -24,5 +23,7 @@ func SubmitGameResults(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	metrics.GameSubmissions.Inc()
 	c.JSON(http.StatusOK, gin.H{"status": "Leaderboard updated"})
 }

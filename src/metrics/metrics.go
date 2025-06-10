@@ -9,6 +9,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+var redisLatencyBuckets = []float64{0.00001, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1}
+
 var (
 	GameSubmissions = prometheus.NewCounter(
 		prometheus.CounterOpts{
@@ -28,7 +30,7 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_seconds",
 			Help:    "Histogram of request durations.",
-			Buckets: prometheus.DefBuckets,
+			Buckets: redisLatencyBuckets,
 		},
 		[]string{"method", "endpoint", "status"},
 	)
@@ -59,14 +61,15 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "redis_latency_seconds",
 			Help:    "Latency for Redis operations",
-			Buckets: prometheus.DefBuckets,
+			Buckets: redisLatencyBuckets,
 		},
 	)
 
 	LeaderboardUpdateDuration = prometheus.NewHistogram(
 		prometheus.HistogramOpts{
-			Name: "leaderboard_update_duration_seconds",
-			Help: "Time taken to compute leaderboard updates",
+			Name:    "leaderboard_update_duration_seconds",
+			Help:    "Time taken to compute leaderboard updates",
+			Buckets: redisLatencyBuckets,
 		},
 	)
 
