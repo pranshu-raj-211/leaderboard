@@ -119,3 +119,8 @@ leaderboard/
 - [ ] Add request validation middleware
 - [ ] Create Grafana dashboards (in progress)
 - [ ] Add player history tracking (and translate ids to usernames before sending)
+
+## Ideas to check out
+1. Builder images and go image vulnerabilities.
+2. Securing docker containers
+3. Modify grafana dashboards using configs
