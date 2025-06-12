@@ -12,6 +12,9 @@ import (
 )
 
 func StreamLeaderboard(c *gin.Context) {
+	metrics.ConcurrentClients.Inc()
+	defer metrics.ConcurrentClients.Dec()
+
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")
@@ -30,10 +33,20 @@ func StreamLeaderboard(c *gin.Context) {
 		case <-ticker.C:
 			results, err := redisclient.GetTopNPlayers(c, "leaderboard", int64(config.AppConfig.Leaderboard.TopPlayersLimit))
 			if err != nil {
-				continue
+				metrics.RedisOperationErrors.WithLabelValues("get_top_players").Inc()
 			}
 
-			data, _ := json.Marshal(results)
+			jsonStart :=time.Now()
+
+			data, err := json.Marshal(results)
+			metrics.JSONMarshalDuration.Observe(time.Since(jsonStart).Seconds())
+    
+			if err != nil {
+				metrics.JSONErrors.WithLabelValues("marshal").Inc()
+				return
+			}
+
+
 			if !jsonEqual(data, lastData) {
 				fmt.Fprintf(c.Writer, "data: %s\n\n", data)
 				c.Writer.Flush()

@@ -67,6 +67,10 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 
 	scores, err := redisClient.ZRevRangeWithScores(ctx, key, 0, n-1).Result()
 
+	metrics.RedisPayloadSize.Observe(float64(len(scores)))
+    metrics.RedisLatency.Observe(time.Since(start).Seconds())
+    
+
 	if err == redis.Nil {
 		return nil, config.Error("Failed to fetch top n players", map[string]any{})
 	}

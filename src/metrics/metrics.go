@@ -79,6 +79,53 @@ var (
 			Help: "Total number of dropped SSE connections",
 		},
 	)
+
+	RedisOperationErrors = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "redis_operation_errors_total",
+			Help: "Redis operation errors by type",
+		},
+		[]string{"operation"},
+	)
+
+	ConcurrentClients = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "concurrent_clients_total",
+			Help: "Number of concurrent clients",
+		},
+	)
+
+	RedisPayloadSize = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "redis_payload_size_bytes",
+			Help:    "Size of Redis operation payloads",
+			Buckets: []float64{128, 512, 1024, 2048, 4096, 8192},
+		},
+	)
+
+	RedisOperationLatency = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "redis_operation_latency_seconds",
+			Help:    "Latency by Redis operation type",
+			Buckets: redisLatencyBuckets,
+		},
+	)
+
+	JSONMarshalDuration = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "json_marshal_duration_seconds",
+			Help:    "Time taken for JSON marshaling operations",
+			Buckets: []float64{0.0001, 0.0005, 0.001, 0.005, 0.01},
+		},
+	)
+
+	JSONErrors = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "json_operation_errors_total",
+			Help: "JSON operation errors by type",
+		},
+		[]string{"operation"},
+	)
 )
 
 func InitMetrics() {
@@ -92,6 +139,12 @@ func InitMetrics() {
 		RedisLatency,
 		LeaderboardUpdateDuration,
 		DroppedSSEConnections,
+		RedisOperationErrors,
+		ConcurrentClients,
+		RedisPayloadSize,
+		RedisOperationLatency,
+		JSONErrors,
+		JSONMarshalDuration,
 	}
 	for _, m := range metrics {
 		if err := prometheus.Register(m); err != nil {
