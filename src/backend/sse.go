@@ -35,7 +35,7 @@ func CreateLeaderboardBroadcaster() *LeaderboardBroadcaster {
 
 	lb := &LeaderboardBroadcaster{
 		// make the channel buffered - clients may be slow, messages can pile up
-		broadcastChan: make(chan LeaderboardUpdate, 100),
+		broadcastChan: make(chan LeaderboardUpdate, config.AppConfig.Server.BroadcastBufferSize),
 		ctx:           ctx,
 		cancel:        cancel,
 	}
@@ -65,7 +65,8 @@ func SetBroadcaster(b *LeaderboardBroadcaster) {
 func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 	defer lb.wg.Done()
 
-	ticker := time.NewTicker(5 * time.Second)
+	// TODO: check this time conversion
+	ticker := time.NewTicker(time.Duration(config.AppConfig.Server.PollingIntervalSeconds) * time.Second)
 	defer ticker.Stop()
 
 	var lastHash [32]byte
@@ -76,8 +77,8 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 			results, err := redisclient.GetTopNPlayers(lb.ctx, "leaderboard", int64(config.AppConfig.Leaderboard.TopPlayersLimit))
 			if err != nil {
 				metrics.RedisOperationErrors.WithLabelValues("get_top_players").Inc()
+				config.Error("Failed to fetch leaderboard from Redis.", map[string]any{"Error": err, "source": "/stream-leaderboard"})
 				continue
-				// TODO: add logging
 			}
 
 			resultString := fmt.Sprintf("%+v", results)
@@ -88,12 +89,13 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 
 				jsonStart := time.Now()
 				jsonData, err := json.Marshal(results)
-				metrics.JSONMarshalDuration.Observe(time.Since(jsonStart).Seconds())
-
 				if err != nil {
+					config.Error("JSON marshaling error",
+						map[string]any{"Error": err, "source": "/stream-leaderboard", "results": results})
 					metrics.JSONErrors.WithLabelValues("marshal").Inc()
-					return
+					continue
 				}
+				metrics.JSONMarshalDuration.Observe(time.Since(jsonStart).Seconds())
 
 				update := LeaderboardUpdate{
 					Data: jsonData,
@@ -122,6 +124,7 @@ func StreamLeaderboard(c *gin.Context) {
 	c.Writer.Flush()
 
 	metrics.ActiveSSEConnections.Inc()
+	config.Info("New SSE conn", map[string]any{"Num active clients": metrics.ActiveSSEConnections})
 	defer metrics.ActiveSSEConnections.Dec()
 
 	broadcastChan := broadcaster.GetBroadcastChannel()
@@ -139,6 +142,7 @@ func StreamLeaderboard(c *gin.Context) {
 
 		case <-c.Request.Context().Done():
 			metrics.DroppedSSEConnections.Inc()
+			config.Info("Closed SSE conn", map[string]any{"open": metrics.ActiveSSEConnections})
 			return
 		}
 	}
