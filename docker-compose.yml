@@ -38,6 +38,9 @@ services:
       - prometheus
     networks:
       - internal
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
 
 networks:
   internal:

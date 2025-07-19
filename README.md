@@ -10,12 +10,14 @@ A high-performance real-time game leaderboard system built with Go, Redis, and S
 - Prometheus metrics integration
 - Structured logging with Zap
 - Configuration management with YAML
+- Docker compose based
+- Grafana based dashboard (configured through `yaml` and `json` - no setup needed)
 
 ## Prerequisites
 
-- Go 1.22 or higher
-- Redis (version 8)
-- Docker (and compose)
+- Docker (and Docker Compose)
+
+For the dev environment it's good to have Go 1.24 installed.
 
 ## Quick Start
 
@@ -26,20 +28,21 @@ git clone
 cd leaderboard
 ```
 
-2. Install dependencies (for dev):
+2. Run the application:
+
+```bash
+docker compose up --build
+```
+
+Dev: Install dependencies
 
 ```bash
 go mod download
 ```
 
-3. Configure the application in `config.yaml`:
+(Optional) Configure the application in `config.yaml`:
 
-
-4. Run the application:
-
-```bash
-docker compose up --build
-```
+To checkout the Grafana dashboard, run the app and go to `http://localhost:3000`, login with the default Grafana username and password (admin).
 
 ## API Endpoints
 
@@ -91,6 +94,8 @@ The application exports Prometheus metrics at `/metrics` including:
 - Redis operation latencies
 - Error counts
 
+and many more. Check out the grafana dashboard at `http://localhost:3000` after running with docker compose. Username and password are grafana defaults (admin).
+
 ## Development
 
 ### Project Structure
@@ -117,10 +122,10 @@ leaderboard/
 - [ ] Add tests
 - [ ] Implement data persistence backup (Postgres, currently in the works)
 - [ ] Add request validation middleware
-- [ ] Create Grafana dashboards (in progress)
 - [ ] Add player history tracking (and translate ids to usernames before sending)
 
 ## Ideas to check out
+
 1. Builder images and go image vulnerabilities.
 2. Securing docker containers
-3. Modify grafana dashboards using configs
+3. Profiling heap and CPU (pprof) in detail
