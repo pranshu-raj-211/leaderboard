@@ -1,0 +1,6 @@
+providers:
+  - name: 'Leaderboard'
+    folder: ''
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards
