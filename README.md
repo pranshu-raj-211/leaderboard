@@ -42,7 +42,7 @@ go mod download
 
 (Optional) Configure the application in `config.yaml`:
 
-To checkout the Grafana dashboard, run the app and go to `http://localhost:3000`, login with the default Grafan username and password (admin).
+To checkout the Grafana dashboard, run the app and go to `http://localhost:3000`, login with the default Grafana username and password (admin).
 
 ## API Endpoints
 
