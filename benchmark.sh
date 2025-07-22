@@ -4,8 +4,10 @@ IMAGE_NAME=${1:-"leaderboard"}
 DOCKERFILE=${2:-"Dockerfile"}
 TRIALS=${3:-5}
 
-echo "Starting Docker build benchmarking for $IMAGE_NAME (${TRIALS} trials)..."
+echo "Starting Docker build benchmarking for $IMAGE_NAME : (${TRIALS} trials)"
+echo "Testing docker buildx build, docker desktop running"
 echo "$(date): Starting docker build benchmarking for $IMAGE_NAME (${TRIALS} trials)" >> logs/docker_benchmark.log
+echo "Testing docker buildx build" >> logs/docker_benchmark.log
 
 total_time_seconds=0
 total_size_mb=0
@@ -45,7 +47,7 @@ if [[ $successful_trials -gt 0 ]]; then
     
     echo "Successful trials: $successful_trials/$TRIALS"
     echo "Average time: ${avg_time}s"
-    echo "Average size: $avg_size_mb"
+    echo "Average size: $avg_size_mb mb"
     
     echo "$(date): Average results - time ${avg_time}s size - $avg_size_mb mb (${successful_trials}/${TRIALS} successful)" >> logs/docker_benchmark.log
 else
@@ -53,3 +55,10 @@ else
     echo "$(date): All trials failed!" >> logs/docker_benchmark.log
 fi
 echo "================================="
+
+echo "Cleaning up Docker resources"
+docker builder prune -af
+docker image rm -f $IMAGE_NAME 2>/dev/null
+docker container prune -f
+docker volume prune -f
+docker network prune -f

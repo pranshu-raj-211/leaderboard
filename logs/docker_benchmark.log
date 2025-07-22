@@ -1,4 +1,30 @@
-Tue, Jul 22, 2025  9:36:03 AM: leaderboard - Build: 1s, Size: 
-Tue, Jul 22, 2025  9:38:14 AM: leaderboard - Build: 5s, Size: 
-Tue, Jul 22, 2025  9:40:11 AM: leaderboard - Build: 62s, Size: 99MB
-Tue, Jul 22, 2025  9:43:33 AM: leaderboard - Build: 71s, Size: 99MB
+Tue, Jul 22, 2025 12:01:22 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing docker build simple
+Trial 1: build time 85s image size 99MB time start 1753165889 time end 1753165974
+Trial 2: build time 87s image size 99MB time start 1753165978 time end 1753166065
+Trial 3: build time 76s image size 99MB time start 1753166069 time end 1753166145
+Trial 4: build time 65s image size 99MB time start 1753166149 time end 1753166214
+Trial 5: build time 85s image size 99MB time start 1753166218 time end 1753166303
+Tue, Jul 22, 2025 12:08:24 PM: Average results - time 79.6s size - 99 mb (5/5 successful)
+Tue, Jul 22, 2025 12:09:23 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Trial 1: build time 89s image size 99MB time start 1753166367 time end 1753166456
+Trial 2: build time 78s image size 99MB time start 1753166460 time end 1753166538
+Trial 3: build time 72s image size 99MB time start 1753166541 time end 1753166613
+Trial 4: build time 114s image size 99MB time start 1753166617 time end 1753166731
+Trial 5: build time 87s image size 99MB time start 1753166735 time end 1753166822
+Tue, Jul 22, 2025 12:22:41 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing docker build simple
+Trial 1: build time 68s image size 99MB time start 1753167163 time end 1753167231
+Trial 2: build time 64s image size 99MB time start 1753167235 time end 1753167299
+Trial 3: build time 61s image size 99MB time start 1753167302 time end 1753167363
+Trial 4: build time 62s image size 99MB time start 1753167366 time end 1753167428
+Trial 5: build time 62s image size 99MB time start 1753167431 time end 1753167493
+Tue, Jul 22, 2025 12:28:14 PM: Average results - time 63.4s size - 99 mb (5/5 successful)
+Tue, Jul 22, 2025 12:28:31 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing docker buildx build
+Trial 1: build time 62s image size 99MB time start 1753167512 time end 1753167574
+Trial 2: build time 63s image size 99MB time start 1753167577 time end 1753167640
+Trial 3: build time 59s image size 99MB time start 1753167643 time end 1753167702
+Trial 4: build time 61s image size 99MB time start 1753167705 time end 1753167766
+Trial 5: build time 62s image size 99MB time start 1753167770 time end 1753167832
+Tue, Jul 22, 2025 12:33:53 PM: Average results - time 61.4s size - 99 mb (5/5 successful)
