@@ -28,3 +28,11 @@ Trial 3: build time 59s image size 99MB time start 1753167643 time end 175316770
 Trial 4: build time 61s image size 99MB time start 1753167705 time end 1753167766
 Trial 5: build time 62s image size 99MB time start 1753167770 time end 1753167832
 Tue, Jul 22, 2025 12:33:53 PM: Average results - time 61.4s size - 99 mb (5/5 successful)
+Tue, Jul 22, 2025 12:38:47 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing alpine images
+Trial 1: build time 27s image size 27.6MB time start 1753168128 time end 1753168155
+Trial 2: build time 27s image size 27.6MB time start 1753168157 time end 1753168184
+Trial 3: build time 23s image size 27.6MB time start 1753168185 time end 1753168208
+Trial 4: build time 23s image size 27.6MB time start 1753168210 time end 1753168233
+Trial 5: build time 22s image size 27.6MB time start 1753168235 time end 1753168257
+Tue, Jul 22, 2025 12:40:58 PM: Average results - time 24.4s size - 27.6 mb (5/5 successful)

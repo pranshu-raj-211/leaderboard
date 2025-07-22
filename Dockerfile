@@ -1,4 +1,4 @@
-FROM golang:1.24 AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
@@ -9,9 +9,9 @@ RUN go mod download
 COPY . .
 RUN go build -o main ./src/main.go
 
-FROM ubuntu:25.04
+FROM alpine:latest
 
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apk --no-cache add ca-certificates
 
 WORKDIR /app
 
