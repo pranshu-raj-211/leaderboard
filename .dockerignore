@@ -1,4 +1,14 @@
 .git
 .gitattributes
 .gitignore
+
 .env
+
+docker-compose.yml
+Dockerfile
+
+logs/
+grafana/
+prometheus/
+
+.vscode/

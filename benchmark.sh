@@ -5,9 +5,9 @@ DOCKERFILE=${2:-"Dockerfile"}
 TRIALS=${3:-5}
 
 echo "Starting Docker build benchmarking for $IMAGE_NAME : (${TRIALS} trials)"
-echo "Testing docker buildx build, docker desktop running"
+echo "Testing dockerfile changes - rollback to last working version (move go mod and sum cp to same line)"
 echo "$(date): Starting docker build benchmarking for $IMAGE_NAME (${TRIALS} trials)" >> logs/docker_benchmark.log
-echo "Testing docker buildx build" >> logs/docker_benchmark.log
+echo "Testing dockerfile changes - rollback to last working version (move go mod and sum cp to same line)" >> logs/docker_benchmark.log
 
 total_time_seconds=0
 total_size_mb=0
@@ -15,11 +15,11 @@ successful_trials=0
 
 for ((i=1; i<=TRIALS; i++)); do
     echo "Running trial $i/$TRIALS..."
-    docker builder prune -f > /dev/null 2>&1
+    docker builder prune -af > /dev/null 2>&1
     
     start_time=$(date +%s)
     
-    docker build -t $IMAGE_NAME -f $DOCKERFILE . > /dev/null 2>&1
+    build_output=$(docker build -t $IMAGE_NAME -f $DOCKERFILE . 2>&1)
     exit_code=$?
     
     end_time=$(date +%s)
@@ -37,6 +37,8 @@ for ((i=1; i<=TRIALS; i++)); do
     else
         echo "Trial $i: Failed (exit code: $exit_code)"
         echo "Trial $i: BUILD FAILED (exit code: $exit_code) time start $start_time time end $end_time" >> logs/docker_benchmark.log
+        echo "$build_output">>logs/benchmark.log
+        echo "$build_output \n --------------------"
     fi
 done
 

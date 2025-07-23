@@ -36,3 +36,57 @@ Trial 3: build time 23s image size 27.6MB time start 1753168185 time end 1753168
 Trial 4: build time 23s image size 27.6MB time start 1753168210 time end 1753168233
 Trial 5: build time 22s image size 27.6MB time start 1753168235 time end 1753168257
 Tue, Jul 22, 2025 12:40:58 PM: Average results - time 24.4s size - 27.6 mb (5/5 successful)
+Wed, Jul 23, 2025  2:21:04 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing comprehensive dockerignore
+Trial 1: build time 26s image size 27.6MB time start 1753260665 time end 1753260691
+Trial 2: build time 24s image size 27.6MB time start 1753260692 time end 1753260716
+Trial 3: build time 27s image size 27.6MB time start 1753260718 time end 1753260745
+Trial 4: build time 27s image size 27.6MB time start 1753260747 time end 1753260774
+Trial 5: build time 26s image size 27.6MB time start 1753260776 time end 1753260802
+Wed, Jul 23, 2025  2:23:23 PM: Average results - time 26s size - 27.6 mb (5/5 successful)
+Wed, Jul 23, 2025  2:24:47 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - update builder image
+Trial 1: build time 30s image size 27.6MB time start 1753260887 time end 1753260917
+Trial 2: BUILD FAILED (exit code: 1) time start 1753260919 time end 1753260950
+Trial 3: BUILD FAILED (exit code: 1) time start 1753260952 time end 1753260980
+Trial 4: BUILD FAILED (exit code: 1) time start 1753260981 time end 1753261008
+Trial 5: BUILD FAILED (exit code: 1) time start 1753261009 time end 1753261039
+Wed, Jul 23, 2025  2:28:03 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - use builder cache - config.yaml
+Trial 1: BUILD FAILED (exit code: 1) time start 1753261085 time end 1753261116
+Trial 2: BUILD FAILED (exit code: 1) time start 1753261118 time end 1753261145
+Trial 3: BUILD FAILED (exit code: 1) time start 1753261147 time end 1753261174
+Trial 4: BUILD FAILED (exit code: 1) time start 1753261175 time end 1753261204
+Trial 5: BUILD FAILED (exit code: 1) time start 1753261205 time end 1753261233
+Wed, Jul 23, 2025  2:30:33 PM: All trials failed!
+Wed, Jul 23, 2025  2:31:18 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - use builder cache - config.yaml
+Trial 1: BUILD FAILED (exit code: 1) time start 1753261278 time end 1753261306
+Build error output:
+
+--- End of error output ---
+Trial 2: BUILD FAILED (exit code: 1) time start 1753261307 time end 1753261334
+Build error output:
+
+--- End of error output ---
+Trial 3: BUILD FAILED (exit code: 1) time start 1753261336 time end 1753261363
+Build error output:
+
+--- End of error output ---
+Trial 4: BUILD FAILED (exit code: 1) time start 1753261364 time end 1753261391
+Build error output:
+
+--- End of error output ---
+Trial 5: BUILD FAILED (exit code: 1) time start 1753261392 time end 1753261419
+Build error output:
+
+--- End of error output ---
+Wed, Jul 23, 2025  2:33:39 PM: All trials failed!
+Wed, Jul 23, 2025  2:40:40 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - rollback to last working version (move go mod and sum cp to same line)
+Trial 1: build time 28s image size 27.6MB time start 1753261840 time end 1753261868
+Trial 2: build time 26s image size 27.6MB time start 1753261870 time end 1753261896
+Trial 3: build time 28s image size 27.6MB time start 1753261898 time end 1753261926
+Trial 4: build time 25s image size 27.6MB time start 1753261928 time end 1753261953
+Trial 5: build time 24s image size 27.6MB time start 1753261955 time end 1753261979
+Wed, Jul 23, 2025  2:42:59 PM: Average results - time 26.2s size - 27.6 mb (5/5 successful)
