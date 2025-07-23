@@ -1,0 +1,137 @@
+Tue, Jul 22, 2025 12:01:22 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing docker build simple
+Trial 1: build time 85s image size 99MB time start 1753165889 time end 1753165974
+Trial 2: build time 87s image size 99MB time start 1753165978 time end 1753166065
+Trial 3: build time 76s image size 99MB time start 1753166069 time end 1753166145
+Trial 4: build time 65s image size 99MB time start 1753166149 time end 1753166214
+Trial 5: build time 85s image size 99MB time start 1753166218 time end 1753166303
+Tue, Jul 22, 2025 12:08:24 PM: Average results - time 79.6s size - 99 mb (5/5 successful)
+Tue, Jul 22, 2025 12:09:23 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Trial 1: build time 89s image size 99MB time start 1753166367 time end 1753166456
+Trial 2: build time 78s image size 99MB time start 1753166460 time end 1753166538
+Trial 3: build time 72s image size 99MB time start 1753166541 time end 1753166613
+Trial 4: build time 114s image size 99MB time start 1753166617 time end 1753166731
+Trial 5: build time 87s image size 99MB time start 1753166735 time end 1753166822
+Tue, Jul 22, 2025 12:22:41 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing docker build simple
+Trial 1: build time 68s image size 99MB time start 1753167163 time end 1753167231
+Trial 2: build time 64s image size 99MB time start 1753167235 time end 1753167299
+Trial 3: build time 61s image size 99MB time start 1753167302 time end 1753167363
+Trial 4: build time 62s image size 99MB time start 1753167366 time end 1753167428
+Trial 5: build time 62s image size 99MB time start 1753167431 time end 1753167493
+Tue, Jul 22, 2025 12:28:14 PM: Average results - time 63.4s size - 99 mb (5/5 successful)
+Tue, Jul 22, 2025 12:28:31 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing docker buildx build
+Trial 1: build time 62s image size 99MB time start 1753167512 time end 1753167574
+Trial 2: build time 63s image size 99MB time start 1753167577 time end 1753167640
+Trial 3: build time 59s image size 99MB time start 1753167643 time end 1753167702
+Trial 4: build time 61s image size 99MB time start 1753167705 time end 1753167766
+Trial 5: build time 62s image size 99MB time start 1753167770 time end 1753167832
+Tue, Jul 22, 2025 12:33:53 PM: Average results - time 61.4s size - 99 mb (5/5 successful)
+Tue, Jul 22, 2025 12:38:47 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing alpine images
+Trial 1: build time 27s image size 27.6MB time start 1753168128 time end 1753168155
+Trial 2: build time 27s image size 27.6MB time start 1753168157 time end 1753168184
+Trial 3: build time 23s image size 27.6MB time start 1753168185 time end 1753168208
+Trial 4: build time 23s image size 27.6MB time start 1753168210 time end 1753168233
+Trial 5: build time 22s image size 27.6MB time start 1753168235 time end 1753168257
+Tue, Jul 22, 2025 12:40:58 PM: Average results - time 24.4s size - 27.6 mb (5/5 successful)
+Wed, Jul 23, 2025  2:21:04 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing comprehensive dockerignore
+Trial 1: build time 26s image size 27.6MB time start 1753260665 time end 1753260691
+Trial 2: build time 24s image size 27.6MB time start 1753260692 time end 1753260716
+Trial 3: build time 27s image size 27.6MB time start 1753260718 time end 1753260745
+Trial 4: build time 27s image size 27.6MB time start 1753260747 time end 1753260774
+Trial 5: build time 26s image size 27.6MB time start 1753260776 time end 1753260802
+Wed, Jul 23, 2025  2:23:23 PM: Average results - time 26s size - 27.6 mb (5/5 successful)
+Wed, Jul 23, 2025  2:24:47 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - update builder image
+Trial 1: build time 30s image size 27.6MB time start 1753260887 time end 1753260917
+Trial 2: BUILD FAILED (exit code: 1) time start 1753260919 time end 1753260950
+Trial 3: BUILD FAILED (exit code: 1) time start 1753260952 time end 1753260980
+Trial 4: BUILD FAILED (exit code: 1) time start 1753260981 time end 1753261008
+Trial 5: BUILD FAILED (exit code: 1) time start 1753261009 time end 1753261039
+Wed, Jul 23, 2025  2:28:03 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - use builder cache - config.yaml
+Trial 1: BUILD FAILED (exit code: 1) time start 1753261085 time end 1753261116
+Trial 2: BUILD FAILED (exit code: 1) time start 1753261118 time end 1753261145
+Trial 3: BUILD FAILED (exit code: 1) time start 1753261147 time end 1753261174
+Trial 4: BUILD FAILED (exit code: 1) time start 1753261175 time end 1753261204
+Trial 5: BUILD FAILED (exit code: 1) time start 1753261205 time end 1753261233
+Wed, Jul 23, 2025  2:30:33 PM: All trials failed!
+Wed, Jul 23, 2025  2:31:18 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - use builder cache - config.yaml
+Trial 1: BUILD FAILED (exit code: 1) time start 1753261278 time end 1753261306
+Build error output:
+
+--- End of error output ---
+Trial 2: BUILD FAILED (exit code: 1) time start 1753261307 time end 1753261334
+Build error output:
+
+--- End of error output ---
+Trial 3: BUILD FAILED (exit code: 1) time start 1753261336 time end 1753261363
+Build error output:
+
+--- End of error output ---
+Trial 4: BUILD FAILED (exit code: 1) time start 1753261364 time end 1753261391
+Build error output:
+
+--- End of error output ---
+Trial 5: BUILD FAILED (exit code: 1) time start 1753261392 time end 1753261419
+Build error output:
+
+--- End of error output ---
+Wed, Jul 23, 2025  2:33:39 PM: All trials failed!
+Wed, Jul 23, 2025  2:40:40 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - rollback to last working version (move go mod and sum cp to same line)
+Trial 1: build time 28s image size 27.6MB time start 1753261840 time end 1753261868
+Trial 2: build time 26s image size 27.6MB time start 1753261870 time end 1753261896
+Trial 3: build time 28s image size 27.6MB time start 1753261898 time end 1753261926
+Trial 4: build time 25s image size 27.6MB time start 1753261928 time end 1753261953
+Trial 5: build time 24s image size 27.6MB time start 1753261955 time end 1753261979
+Wed, Jul 23, 2025  2:42:59 PM: Average results - time 26.2s size - 27.6 mb (5/5 successful)
+Wed, Jul 23, 2025  2:48:01 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - use builder cache for config.yaml
+Trial 1: BUILD FAILED (exit code: 1) time start 1753262282 time end 1753262309
+Trial 2: BUILD FAILED (exit code: 1) time start 1753262310 time end 1753262336
+Trial 3: BUILD FAILED (exit code: 1) time start 1753262338 time end 1753262364
+Trial 4: BUILD FAILED (exit code: 1) time start 1753262366 time end 1753262393
+Trial 5: BUILD FAILED (exit code: 1) time start 1753262395 time end 1753262422
+Wed, Jul 23, 2025  2:50:22 PM: All trials failed!
+Wed, Jul 23, 2025  2:50:31 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - use builder cache for config.yaml
+Trial 1: build time 26s image size 27.6MB time start 1753262431 time end 1753262457
+Trial 2: build time 31s image size 27.6MB time start 1753262459 time end 1753262490
+Trial 3: build time 28s image size 27.6MB time start 1753262491 time end 1753262519
+Trial 4: build time 29s image size 27.6MB time start 1753262521 time end 1753262550
+Trial 5: build time 28s image size 27.6MB time start 1753262552 time end 1753262580
+Wed, Jul 23, 2025  2:53:00 PM: Average results - time 28.4s size - 27.6 mb (5/5 successful)
+Wed, Jul 23, 2025  2:56:53 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - remove ca certificate install
+Trial 1: build time 28s image size 27.1MB time start 1753262814 time end 1753262842
+Trial 2: build time 28s image size 27.1MB time start 1753262843 time end 1753262871
+Trial 3: build time 27s image size 27.1MB time start 1753262873 time end 1753262900
+Trial 4: build time 27s image size 27.1MB time start 1753262901 time end 1753262928
+Trial 5: build time 27s image size 27.1MB time start 1753262930 time end 1753262957
+Wed, Jul 23, 2025  2:59:18 PM: Average results - time 27.4s size - 27.1 mb (5/5 successful)
+Wed, Jul 23, 2025  3:01:53 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - single stage alpine build
+Trial 1: build time 25s image size 699MB time start 1753263113 time end 1753263138
+Trial 2: build time 28s image size 699MB time start 1753263139 time end 1753263167
+Trial 3: build time 76s image size 1.29GB time start 1753263169 time end 1753263245
+Trial 4: build time 31s image size 1.29GB time start 1753263246 time end 1753263277
+Trial 5: build time 30s image size 1.29GB time start 1753263278 time end 1753263308
+Wed, Jul 23, 2025  3:06:23 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - single stage non alpine build
+Trial 1: build time 31s image size 1.29GB time start 1753263384 time end 1753263415
+Trial 2: build time 34s image size 1.29GB time start 1753263416 time end 1753263450
+Trial 3: build time 33s image size 1.29GB time start 1753263451 time end 1753263484
+Trial 4: build time 30s image size 1.29GB time start 1753263485 time end 1753263515
+Trial 5: build time 26s image size 699MB time start 1753263516 time end 1753263542
+Wed, Jul 23, 2025  3:15:30 PM: Starting docker build benchmarking for leaderboard (5 trials)
+Testing dockerfile changes - single stage alpine build, no cache flag
+Trial 1: build time 32s image size 699MB time start 1753263930 time end 1753263962
+Trial 2: build time 32s image size 1.29GB time start 1753263962 time end 1753263994
+Trial 3: build time 28s image size 1.29GB time start 1753263994 time end 1753264022
+Trial 4: build time 29s image size 1.29GB time start 1753264022 time end 1753264051
+Trial 5: build time 29s image size 1.29GB time start 1753264051 time end 1753264080
