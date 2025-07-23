@@ -1,0 +1,425 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 381B done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/golang:1.24-alpine
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 DONE 2.5s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 158B done
+#4 DONE 0.1s
+
+#5 [stage-1 1/5] FROM docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+#5 resolve docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 0.1s done
+#5 sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 9.22kB / 9.22kB done
+#5 sha256:eafc1edb577d2e9b458664a15f23ea1c370214193226069eb22921169fc7e43f 1.02kB / 1.02kB done
+#5 sha256:9234e8fb04c47cfe0f49931e4ac7eb76fa904e33b7f8576aec0501c085f02516 581B / 581B done
+#5 DONE 0.2s
+
+#6 [internal] load build context
+#6 transferring context: 31.00kB done
+#6 DONE 0.2s
+
+#7 [builder 1/7] FROM docker.io/library/golang:1.24-alpine
+#7 DONE 0.3s
+
+#8 [builder 2/7] WORKDIR /app
+#8 DONE 0.1s
+
+#9 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#9 ...
+
+#10 [builder 3/7] COPY go.mod go.sum ./
+#10 DONE 0.1s
+
+#11 [builder 4/7] RUN go mod download
+#11 ...
+
+#9 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#9 0.424 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/APKINDEX.tar.gz
+#9 0.831 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/community/x86_64/APKINDEX.tar.gz
+#9 1.405 (1/1) Installing ca-certificates (20250619-r0)
+#9 1.473 Executing busybox-1.37.0-r18.trigger
+#9 1.484 Executing ca-certificates-20250619-r0.trigger
+#9 1.552 OK: 8 MiB in 17 packages
+#9 DONE 1.7s
+
+#12 [stage-1 3/5] WORKDIR /app
+#12 DONE 0.1s
+
+#11 [builder 4/7] RUN go mod download
+#11 DONE 5.9s
+
+#13 [builder 5/7] COPY src/ ./src/
+#13 DONE 0.1s
+
+#14 [builder 6/7] COPY config.yaml .
+#14 DONE 0.1s
+
+#15 [builder 7/7] RUN go build -o main ./src/main.go
+#15 DONE 16.6s
+
+#16 [stage-1 4/5] COPY --from=builder /app/main .
+#16 CACHED
+
+#17 [stage-1 5/5] COPY --from=builder config.yaml .
+#17 ERROR: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::6t6fizfltluwy183yo3xo5eog: "/config.yaml": not found
+------
+ > [stage-1 5/5] COPY --from=builder config.yaml .:
+------
+Dockerfile:20
+--------------------
+  18 |     
+  19 |     COPY --from=builder /app/main .
+  20 | >>> COPY --from=builder config.yaml .
+  21 |     
+  22 |     CMD ["./main"]
+--------------------
+ERROR: failed to solve: failed to compute cache key: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::6t6fizfltluwy183yo3xo5eog: "/config.yaml": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/o3u9k71vueonpc26f0c7qvhkx
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 381B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/golang:1.24-alpine
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 DONE 2.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 158B done
+#4 DONE 0.0s
+
+#5 [stage-1 1/5] FROM docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+#5 resolve docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 0.0s done
+#5 sha256:9234e8fb04c47cfe0f49931e4ac7eb76fa904e33b7f8576aec0501c085f02516 581B / 581B done
+#5 sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 9.22kB / 9.22kB done
+#5 sha256:eafc1edb577d2e9b458664a15f23ea1c370214193226069eb22921169fc7e43f 1.02kB / 1.02kB done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 31.00kB 0.0s done
+#6 DONE 0.1s
+
+#7 [builder 1/7] FROM docker.io/library/golang:1.24-alpine
+#7 DONE 0.1s
+
+#8 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#8 ...
+
+#9 [builder 2/7] WORKDIR /app
+#9 DONE 0.0s
+
+#10 [builder 3/7] COPY go.mod go.sum ./
+#10 DONE 0.0s
+
+#8 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#8 0.253 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/APKINDEX.tar.gz
+#8 0.507 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/community/x86_64/APKINDEX.tar.gz
+#8 0.938 (1/1) Installing ca-certificates (20250619-r0)
+#8 1.005 Executing busybox-1.37.0-r18.trigger
+#8 1.012 Executing ca-certificates-20250619-r0.trigger
+#8 1.081 OK: 8 MiB in 17 packages
+#8 DONE 1.2s
+
+#11 [builder 4/7] RUN go mod download
+#11 ...
+
+#12 [stage-1 3/5] WORKDIR /app
+#12 DONE 0.1s
+
+#11 [builder 4/7] RUN go mod download
+#11 DONE 6.0s
+
+#13 [builder 5/7] COPY src/ ./src/
+#13 DONE 0.0s
+
+#14 [builder 6/7] COPY config.yaml .
+#14 DONE 0.0s
+
+#15 [builder 7/7] RUN go build -o main ./src/main.go
+#15 DONE 15.8s
+
+#16 [stage-1 4/5] COPY --from=builder /app/main .
+#16 CACHED
+
+#17 [stage-1 5/5] COPY --from=builder config.yaml .
+#17 ERROR: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::mlpr98qm7joeattc1ggjunzdx: "/config.yaml": not found
+------
+ > [stage-1 5/5] COPY --from=builder config.yaml .:
+------
+Dockerfile:20
+--------------------
+  18 |     
+  19 |     COPY --from=builder /app/main .
+  20 | >>> COPY --from=builder config.yaml .
+  21 |     
+  22 |     CMD ["./main"]
+--------------------
+ERROR: failed to solve: failed to compute cache key: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::mlpr98qm7joeattc1ggjunzdx: "/config.yaml": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/qiowwatgfkx4ap7wt0sm8vqrd
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 381B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/golang:1.24-alpine
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 DONE 2.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 158B done
+#4 DONE 0.0s
+
+#5 [stage-1 1/5] FROM docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+#5 resolve docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 0.0s done
+#5 sha256:eafc1edb577d2e9b458664a15f23ea1c370214193226069eb22921169fc7e43f 1.02kB / 1.02kB done
+#5 sha256:9234e8fb04c47cfe0f49931e4ac7eb76fa904e33b7f8576aec0501c085f02516 581B / 581B done
+#5 sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 9.22kB / 9.22kB done
+#5 DONE 0.1s
+
+#6 [builder 1/7] FROM docker.io/library/golang:1.24-alpine
+#6 DONE 0.1s
+
+#7 [internal] load build context
+#7 transferring context: 31.00kB done
+#7 DONE 0.1s
+
+#8 [builder 2/7] WORKDIR /app
+#8 DONE 0.0s
+
+#9 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#9 ...
+
+#10 [builder 3/7] COPY go.mod go.sum ./
+#10 DONE 0.0s
+
+#9 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#9 0.239 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/APKINDEX.tar.gz
+#9 0.533 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/community/x86_64/APKINDEX.tar.gz
+#9 1.054 (1/1) Installing ca-certificates (20250619-r0)
+#9 1.116 Executing busybox-1.37.0-r18.trigger
+#9 1.123 Executing ca-certificates-20250619-r0.trigger
+#9 1.193 OK: 8 MiB in 17 packages
+#9 DONE 1.3s
+
+#11 [builder 4/7] RUN go mod download
+#11 ...
+
+#12 [stage-1 3/5] WORKDIR /app
+#12 DONE 0.0s
+
+#11 [builder 4/7] RUN go mod download
+#11 DONE 5.6s
+
+#13 [builder 5/7] COPY src/ ./src/
+#13 DONE 0.0s
+
+#14 [builder 6/7] COPY config.yaml .
+#14 DONE 0.0s
+
+#15 [builder 7/7] RUN go build -o main ./src/main.go
+#15 DONE 17.3s
+
+#16 [stage-1 4/5] COPY --from=builder /app/main .
+#16 CACHED
+
+#17 [stage-1 5/5] COPY --from=builder config.yaml .
+#17 ERROR: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::jvjtv3kay4pfm68jgephz16t8: "/config.yaml": not found
+------
+ > [stage-1 5/5] COPY --from=builder config.yaml .:
+------
+Dockerfile:20
+--------------------
+  18 |     
+  19 |     COPY --from=builder /app/main .
+  20 | >>> COPY --from=builder config.yaml .
+  21 |     
+  22 |     CMD ["./main"]
+--------------------
+ERROR: failed to solve: failed to compute cache key: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::jvjtv3kay4pfm68jgephz16t8: "/config.yaml": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/odf689apwymq6lcbs1hwituph
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 381B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/golang:1.24-alpine
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 DONE 2.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 158B done
+#4 DONE 0.0s
+
+#5 [stage-1 1/5] FROM docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+#5 resolve docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 0.0s done
+#5 sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 9.22kB / 9.22kB done
+#5 sha256:eafc1edb577d2e9b458664a15f23ea1c370214193226069eb22921169fc7e43f 1.02kB / 1.02kB done
+#5 sha256:9234e8fb04c47cfe0f49931e4ac7eb76fa904e33b7f8576aec0501c085f02516 581B / 581B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 31.00kB 0.0s done
+#6 DONE 0.1s
+
+#7 [builder 1/7] FROM docker.io/library/golang:1.24-alpine
+#7 DONE 0.1s
+
+#8 [builder 2/7] WORKDIR /app
+#8 DONE 0.0s
+
+#9 [builder 3/7] COPY go.mod go.sum ./
+#9 DONE 0.0s
+
+#10 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#10 0.236 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/APKINDEX.tar.gz
+#10 0.529 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/community/x86_64/APKINDEX.tar.gz
+#10 1.121 (1/1) Installing ca-certificates (20250619-r0)
+#10 1.184 Executing busybox-1.37.0-r18.trigger
+#10 1.193 Executing ca-certificates-20250619-r0.trigger
+#10 1.277 OK: 8 MiB in 17 packages
+#10 DONE 1.4s
+
+#11 [builder 4/7] RUN go mod download
+#11 ...
+
+#12 [stage-1 3/5] WORKDIR /app
+#12 DONE 0.1s
+
+#11 [builder 4/7] RUN go mod download
+#11 DONE 6.1s
+
+#13 [builder 5/7] COPY src/ ./src/
+#13 DONE 0.0s
+
+#14 [builder 6/7] COPY config.yaml .
+#14 DONE 0.0s
+
+#15 [builder 7/7] RUN go build -o main ./src/main.go
+#15 DONE 17.5s
+
+#16 [stage-1 4/5] COPY --from=builder /app/main .
+#16 CACHED
+
+#17 [stage-1 5/5] COPY --from=builder config.yaml .
+#17 ERROR: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::vaopsf72ptpkdbyaosm8vdyqa: "/config.yaml": not found
+------
+ > [stage-1 5/5] COPY --from=builder config.yaml .:
+------
+Dockerfile:20
+--------------------
+  18 |     
+  19 |     COPY --from=builder /app/main .
+  20 | >>> COPY --from=builder config.yaml .
+  21 |     
+  22 |     CMD ["./main"]
+--------------------
+ERROR: failed to solve: failed to compute cache key: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::vaopsf72ptpkdbyaosm8vdyqa: "/config.yaml": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/k2qr3189226chc91ap4e5zzal
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 381B done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/golang:1.24-alpine
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 DONE 2.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 158B done
+#4 DONE 0.1s
+
+#5 [stage-1 1/5] FROM docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+#5 resolve docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 0.1s done
+#5 ...
+
+#6 [internal] load build context
+#6 transferring context: 31.00kB done
+#6 DONE 0.2s
+
+#5 [stage-1 1/5] FROM docker.io/library/alpine:latest@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+#5 sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 9.22kB / 9.22kB done
+#5 sha256:eafc1edb577d2e9b458664a15f23ea1c370214193226069eb22921169fc7e43f 1.02kB / 1.02kB done
+#5 sha256:9234e8fb04c47cfe0f49931e4ac7eb76fa904e33b7f8576aec0501c085f02516 581B / 581B done
+#5 DONE 0.2s
+
+#7 [builder 1/7] FROM docker.io/library/golang:1.24-alpine
+#7 DONE 0.3s
+
+#8 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#8 ...
+
+#9 [builder 2/7] WORKDIR /app
+#9 DONE 0.1s
+
+#10 [builder 3/7] COPY go.mod go.sum ./
+#10 DONE 0.1s
+
+#8 [stage-1 2/5] RUN apk --no-cache add ca-certificates
+#8 0.324 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/main/x86_64/APKINDEX.tar.gz
+#8 0.577 fetch https://dl-cdn.alpinelinux.org/alpine/v3.22/community/x86_64/APKINDEX.tar.gz
+#8 1.245 (1/1) Installing ca-certificates (20250619-r0)
+#8 1.315 Executing busybox-1.37.0-r18.trigger
+#8 1.324 Executing ca-certificates-20250619-r0.trigger
+#8 1.397 OK: 8 MiB in 17 packages
+#8 DONE 1.5s
+
+#11 [builder 4/7] RUN go mod download
+#11 ...
+
+#12 [stage-1 3/5] WORKDIR /app
+#12 DONE 0.1s
+
+#11 [builder 4/7] RUN go mod download
+#11 DONE 5.6s
+
+#13 [builder 5/7] COPY src/ ./src/
+#13 DONE 0.1s
+
+#14 [builder 6/7] COPY config.yaml .
+#14 DONE 0.1s
+
+#15 [builder 7/7] RUN go build -o main ./src/main.go
+#15 DONE 17.3s
+
+#16 [stage-1 4/5] COPY --from=builder /app/main .
+#16 CACHED
+
+#17 [stage-1 5/5] COPY --from=builder config.yaml .
+#17 ERROR: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::txe49r4um5opvtf6hmhrysf28: "/config.yaml": not found
+------
+ > [stage-1 5/5] COPY --from=builder config.yaml .:
+------
+Dockerfile:20
+--------------------
+  18 |     
+  19 |     COPY --from=builder /app/main .
+  20 | >>> COPY --from=builder config.yaml .
+  21 |     
+  22 |     CMD ["./main"]
+--------------------
+ERROR: failed to solve: failed to compute cache key: failed to calculate checksum of ref 21d87aad-da6e-4088-ad1d-06d52a5ab477::txe49r4um5opvtf6hmhrysf28: "/config.yaml": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/in1azh25mzphipsf4fdz1uxlw
