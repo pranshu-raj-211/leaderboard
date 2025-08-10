@@ -1,21 +1,22 @@
-FROM golang:1.24 AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . .
+COPY src/ ./src/
+COPY config.yaml .
+
 RUN go build -o main ./src/main.go
 
-FROM ubuntu:25.04
+FROM alpine:latest
 
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apk --no-cache add ca-certificates
 
 WORKDIR /app
 
 COPY --from=builder /app/main .
-COPY config.yaml .
+COPY --from=builder /app/config.yaml .
 
 CMD ["./main"]
