@@ -73,8 +73,8 @@ var (
 		},
 	)
 
-	DroppedSSEConnections = prometheus.NewCounter(
-		prometheus.CounterOpts{
+	DroppedSSEConnections = prometheus.NewGauge(
+		prometheus.GaugeOpts{
 			Name: "dropped_sse_connections_total",
 			Help: "Total number of dropped SSE connections",
 		},
