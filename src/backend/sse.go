@@ -109,6 +109,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 			// clean
 			clientsToRemove = append(clientsToRemove, client)
 		default:
+			metrics.FilledSSEChannels.Inc()
 		}
 	}
 	lb.clientsMutex.RUnlock()
