@@ -34,6 +34,7 @@ var (
 		},
 		[]string{"method", "endpoint", "status"},
 	)
+
 	HTTPRequests = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_requests_total",
@@ -126,6 +127,13 @@ var (
 		},
 		[]string{"operation"},
 	)
+
+	FilledSSEChannels = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "filled_sse_channels",
+			Help: "Number of SSE client channels that are full",
+		},
+	)
 )
 
 func InitMetrics() {
@@ -145,6 +153,7 @@ func InitMetrics() {
 		RedisOperationLatency,
 		JSONErrors,
 		JSONMarshalDuration,
+		FilledSSEChannels,
 	}
 	for _, m := range metrics {
 		if err := prometheus.Register(m); err != nil {

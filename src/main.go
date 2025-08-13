@@ -25,6 +25,11 @@ func main() {
 	redisclient.InitRedis()
 	metrics.InitMetrics()
 
+	broadcaster := backend.CreateLeaderboardBroadcaster()
+	defer broadcaster.StopBroadcast()
+
+	backend.SetBroadcaster(broadcaster)
+
 	r := gin.Default()
 
 	r.Use(metrics.MetricsMiddleware())

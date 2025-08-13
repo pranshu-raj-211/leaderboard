@@ -109,23 +109,63 @@ leaderboard/
 │   ├── models/      # Data models
 │   ├── redisclient/ # Redis operations
 │   └── main.go      # Application entry point
+|── tests/
+|   |──load/         # Load testing scripts
 ├── config.yaml      # Configuration file
-├── go.mod          # Go module file
-└── README.md       # This file
+├── go.mod           # Go module file
+└── README.md        # This file
 ```
+
+## Benchmarking
+To load test the application, first spin up the app using docker compose.
+
+`docker compose up --build`
+
+Then in a separate shell, after the compose app is up and running:
+
+```bash
+# POST requests done through HTTP
+go run tests/load/submitter/submit.go
+
+# and in another shell, for streaming responses - SSE clients
+go run tests/load/streamer/stream.go
+```
+
+By default these will run with the default number of submitters as 10, SSE clients as 20000. On a Fedora Linux machine with 8GB RAM, this runs comfortably, with memory usage maxing out at 6.8GB.
+
+[Post with Grafana dashboard - 28231 active SSE conns](https://x.com/seigino99707047/status/1955225344744583581)
+
+[Post with game submissions dashboard](https://x.com/seigino99707047/status/1955246776035721718)
+
+Combined streamer and submitter scripts have not been tested beyond this limit, however the streamer was tested in standalone mode, which went to 28,232 connections (default max outbound ports in Linux).
+
+The streaming script is based off of [Eran Yanay's repo for his Gophercon talk](https://github.com/eranyanay/1m-go-websockets).
 
 ## TODO
 
-- [ ] Add rate limiting for API endpoints
-- [ ] Add authentication/authorization (necessary for server)
+- [ ] Add authentication (necessary for server)
 - [ ] Create comprehensive API documentation
-- [ ] Add tests
-- [ ] Implement data persistence backup (Postgres, currently in the works)
+- [ ] Tests
+- [ ] Implement data persistence backup and aggregation (Postgres, currently in the works)
 - [ ] Add request validation middleware
 - [ ] Add player history tracking (and translate ids to usernames before sending)
+- [ ] Improve metrics and dashboard configs
+- [ ] Redis pipelining and connection pooling (improve other access patterns)
 
 ## Ideas to check out
 
-1. Builder images and go image vulnerabilities.
-2. Securing docker containers
-3. Profiling heap and CPU (pprof) in detail
+1. Securing docker containers
+2. Profiling heap and CPU (pprof) in detail
+
+## Interesting things I learnt while working on this
+
+1. Docker build optimixation - [blog](https://blog.pranshu-raj.me/posts/optimizing-docker-builds/)
+2. Grafana dashboard config for persistence across builds
+3. Mutexes, race conditions (got to see these happen in my code)
+4. Go concurrency - goroutines and channels
+
+## Things I need to learn more about
+1. Testing
+2. Go context
+3. Profiling
+4. Go garbage collector

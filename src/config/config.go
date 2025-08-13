@@ -18,8 +18,10 @@ type Config struct {
 	} `yaml:"redis"`
 
 	Server struct {
-		Port int    `yaml:"port"`
-		Host string `yaml:"host"`
+		Port                   int    `yaml:"port"`
+		Host                   string `yaml:"host"`
+		BroadcastBufferSize    int    `yaml:"broadcast_buffer_size"`
+		PollingIntervalSeconds int    `yaml:"polling_interval_seconds"`
 	} `yaml:"server"`
 
 	Leaderboard struct {
