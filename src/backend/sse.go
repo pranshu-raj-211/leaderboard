@@ -191,7 +191,7 @@ func StreamLeaderboard(c *gin.Context) {
 	c.Writer.Flush()
 
 	metrics.ActiveSSEConnections.Inc()
-	config.Info("New SSE conn", map[string]any{"Num active clients": metrics.ActiveSSEConnections})
+	config.Info("New SSE conn", map[string]any{})
 	defer metrics.ActiveSSEConnections.Dec()
 
 	client, channel := broadcaster.AddClient()
