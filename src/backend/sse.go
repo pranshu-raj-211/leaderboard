@@ -36,7 +36,7 @@ type LeaderboardBroadcaster struct {
 }
 
 // CreateLeaderboardBroadcaster creates and returns a new LeaderboardBroadcaster.
-// 
+//
 // The returned broadcaster has an internal cancelable context, an initialized
 // client map, and a WaitGroup entry for a background goroutine that polls for
 // leaderboard changes. A background goroutine running detectLeaderboardChanges
@@ -141,7 +141,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	}
 }
 
-// package level var
+// TODO: change to dependency injection
 var broadcaster *LeaderboardBroadcaster
 
 func SetBroadcaster(b *LeaderboardBroadcaster) {
@@ -208,7 +208,7 @@ func StreamLeaderboard(c *gin.Context) {
 	client, channel := broadcaster.AddClient()
 	defer broadcaster.RemoveClient(client)
 
-	heartbeatTicker := time.NewTicker(20 * time.Second)
+	heartbeatTicker := time.NewTicker(time.Duration(config.AppConfig.Server.HeartbeatIntervalSeconds) * time.Second)
 	defer heartbeatTicker.Stop()
 
 	for {

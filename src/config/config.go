@@ -22,6 +22,7 @@ type Config struct {
 		Host                   string `yaml:"host"`
 		BroadcastBufferSize    int    `yaml:"broadcast_buffer_size"`
 		PollingIntervalSeconds int    `yaml:"polling_interval_seconds"`
+		HeartbeatIntervalSeconds int `yaml:"heartbeat_interval_seconds"`
 	} `yaml:"server"`
 
 	Leaderboard struct {

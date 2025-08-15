@@ -21,6 +21,7 @@ func InitRedis() {
 		})
 
 		_, err := redisClient.Ping(context.Background()).Result()
+		// keep retrying until redis is connected, fatal otherwise
 		if err == nil {
 			return
 		}
@@ -46,6 +47,7 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 		redisClient.ZIncrBy(ctx, "leaderboard", 0.5, player1ID)
 		redisClient.ZIncrBy(ctx, "leaderboard", 0.5, player2ID)
 	default:
+		// ? is this incorrect?
 		return config.Error("Invalid game result, did not update leaderboard",
 			map[string]any{
 				"player1ID": player1ID,
@@ -66,7 +68,8 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 
 	scores, err := redisClient.ZRevRangeWithScores(ctx, key, 0, n-1).Result()
 
-	if err == nil {
+	if err != nil {
+		metrics.RedisLatency.Observe(time.Since(start).Seconds())
 		return nil, config.Error("Failed to fetch top n players", map[string]any{})
 	}
 	metrics.RedisPayloadSize.Observe(float64(len(scores)))
@@ -75,7 +78,7 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 }
 
 // GetPlayerScore returns the leaderboard rank and score for the given player ID in the specified sorted set key.
-// 
+//
 // The function queries Redis for the member's rank and score and observes the Redis latency metric before returning.
 // If the player is not present, Redis returns redis.Nil; in that case the error will be redis.Nil and the returned
 // rank and score will be zero. Any other Redis error is returned to the caller as well.
@@ -83,11 +86,12 @@ func GetPlayerScore(ctx context.Context, key string, playerID string) (int64, fl
 	start := time.Now()
 
 	player_info, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
-	if err == redis.Nil {
-		config.Error("Something went wrong while getting player stats", map[string]any{"player_id": playerID, "Error": err})
+	if err != nil {
+		metrics.RedisLatency.Observe(time.Since(start).Seconds())
+		return 0, 0, config.Error("Something went wrong while getting player stats", map[string]any{"player_id": playerID, "Error": err})
 	}
 	metrics.RedisLatency.Observe(time.Since(start).Seconds())
 	rank := player_info.Rank
 	score := player_info.Score
-	return rank, score, err
+	return rank, score, nil
 }
