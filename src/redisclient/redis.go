@@ -74,14 +74,12 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 
 func GetPlayerScore(ctx context.Context, key string, playerID string) (int64, float64, error) {
 	start := time.Now()
-	defer func() {
-		metrics.RedisLatency.Observe(time.Since(start).Seconds())
-	}()
 
 	player_info, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
 	if err == redis.Nil {
 		config.Error("Something went wrong while getting player stats", map[string]any{"player_id": playerID, "Error": err})
 	}
+	metrics.RedisLatency.Observe(time.Since(start).Seconds())
 	rank := player_info.Rank
 	score := player_info.Score
 	return rank, score, err

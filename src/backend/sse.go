@@ -108,12 +108,13 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 		default:
 			metrics.FilledSSEChannels.Inc()
 			// drain channel before pushing new update
+		drainLoop:
 			for {
 				select {
 				case <-client.channel:
 				default:
 					client.channel <- update
-					return
+					break drainLoop
 				}
 			}
 		}
@@ -163,6 +164,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 			if err != nil {
 				config.Error("JSON marshaling error", map[string]any{"Error": err, "source": "/stream-leaderboard"})
 				metrics.JSONErrors.WithLabelValues("marshal").Inc()
+				continue
 			}
 			metrics.JSONMarshalDuration.Observe(float64(time.Since(jsonStart).Seconds()))
 
@@ -203,7 +205,7 @@ func StreamLeaderboard(c *gin.Context) {
 		case update, ok := <-channel:
 			if !ok {
 				// channel closed
-				config.Error("Channel found closed on update", map[string]any{})
+				config.Info("Channel found closed on update", map[string]any{})
 				return
 			}
 			fmt.Fprintf(c.Writer, "data: %s\n\n", update.Data)
@@ -211,7 +213,7 @@ func StreamLeaderboard(c *gin.Context) {
 			metrics.SSEMessagesSent.Inc()
 		case <-c.Request.Context().Done():
 			metrics.DroppedSSEConnections.Inc()
-			config.Info("Closed SSE conn", map[string]any{})
+			config.Info("Closed SSE conn", map[string]any{"client ID": client.ID})
 			return
 		}
 	}
