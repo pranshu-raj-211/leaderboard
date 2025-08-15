@@ -35,11 +35,17 @@ type LeaderboardBroadcaster struct {
 	clientCounter int64
 }
 
+// CreateLeaderboardBroadcaster creates and returns a new LeaderboardBroadcaster.
+// 
+// The returned broadcaster has an internal cancelable context, an initialized
+// client map, and a WaitGroup entry for a background goroutine that polls for
+// leaderboard changes. A background goroutine running detectLeaderboardChanges
+// is started before this function returns. Call StopBroadcast on the returned
+// broadcaster to cancel the background work and clean up connected clients.
 func CreateLeaderboardBroadcaster() *LeaderboardBroadcaster {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	lb := &LeaderboardBroadcaster{
-		// make the channel buffered - clients may be slow, messages can pile up
 		clients: make(map[int64]*Client),
 		ctx:     ctx,
 		cancel:  cancel,
@@ -104,12 +110,20 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	for _, client := range lb.clients {
 		select {
 		case client.channel <- update:
-			// sent
 		case <-client.ctx.Done():
-			// clean
 			clientsToRemove = append(clientsToRemove, client)
 		default:
 			metrics.FilledSSEChannels.Inc()
+			// drain channel before pushing new update
+		drainLoop:
+			for {
+				select {
+				case <-client.channel:
+				default:
+					client.channel <- update
+					break drainLoop
+				}
+			}
 		}
 	}
 	lb.clientsMutex.RUnlock()
@@ -152,27 +166,23 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 				continue
 			}
 
-			resultString := fmt.Sprintf("%+v", results)
-			currentHash := sha256.Sum256([]byte(resultString))
+			jsonStart := time.Now()
+			jsonData, err := json.Marshal(results)
+			if err != nil {
+				config.Error("JSON marshaling error", map[string]any{"Error": err, "source": "/stream-leaderboard"})
+				metrics.JSONErrors.WithLabelValues("marshal").Inc()
+				continue
+			}
+			metrics.JSONMarshalDuration.Observe(float64(time.Since(jsonStart).Seconds()))
+
+			currentHash := sha256.Sum256(jsonData)
 
 			if currentHash != lastHash {
 				lastHash = currentHash
-
-				jsonStart := time.Now()
-				jsonData, err := json.Marshal(results)
-				if err != nil {
-					config.Error("JSON marshaling error",
-						map[string]any{"Error": err, "source": "/stream-leaderboard", "results": results})
-					metrics.JSONErrors.WithLabelValues("marshal").Inc()
-					continue
-				}
-				metrics.JSONMarshalDuration.Observe(time.Since(jsonStart).Seconds())
-
 				update := LeaderboardUpdate{
 					Data: jsonData,
 					Hash: currentHash,
 				}
-
 				lb.broadcastToAllClients(update)
 			}
 		case <-lb.ctx.Done():
@@ -181,6 +191,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 	}
 }
 
+// and ensures the client is removed from the broadcaster when the handler returns.
 func StreamLeaderboard(c *gin.Context) {
 	metrics.ConcurrentClients.Inc()
 	defer metrics.ConcurrentClients.Dec()
@@ -202,6 +213,7 @@ func StreamLeaderboard(c *gin.Context) {
 		case update, ok := <-channel:
 			if !ok {
 				// channel closed
+				config.Info("Channel found closed on update", map[string]any{})
 				return
 			}
 			fmt.Fprintf(c.Writer, "data: %s\n\n", update.Data)
@@ -209,7 +221,7 @@ func StreamLeaderboard(c *gin.Context) {
 			metrics.SSEMessagesSent.Inc()
 		case <-c.Request.Context().Done():
 			metrics.DroppedSSEConnections.Inc()
-			config.Info("Closed SSE conn", map[string]any{"open": metrics.ActiveSSEConnections})
+			config.Info("Closed SSE conn", map[string]any{"client ID": client.ID})
 			return
 		}
 	}
