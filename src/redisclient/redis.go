@@ -28,7 +28,7 @@ func InitRedis() {
 		config.Error("Failed to connect to redis client, retrying", map[string]any{"Error": err})
 		time.Sleep(2 * time.Second)
 	}
-	config.Fatal("Could not connect to redis client after 10 retries", map[string]any{})
+	config.Fatal("Could not connect to redis client after max retries", map[string]any{"Tried":maxRetries})
 }
 
 // The function also observes RedisLatency and LeaderboardUpdateDuration metrics after performing the update.
@@ -47,7 +47,6 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 		redisClient.ZIncrBy(ctx, "leaderboard", 0.5, player1ID)
 		redisClient.ZIncrBy(ctx, "leaderboard", 0.5, player2ID)
 	default:
-		// ? is this incorrect?
 		return config.Error("Invalid game result, did not update leaderboard",
 			map[string]any{
 				"player1ID": player1ID,
@@ -62,7 +61,7 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 
 // GetTopNPlayers returns up to n entries from the sorted set stored at key ordered by highest score first.
 // It calls Redis ZRevRangeWithScores to fetch the top N members with their scores and returns the resulting []redis.Z.
-// Note: due to inverted error handling in this implementation, a nil error from Redis is treated as a failure (the function returns a non-nil error), while a non-nil Redis error will cause the function to record metrics and return the fetched scores.
+// On success, returns top N scores, sorted in reverse order (highest first). On failure, records error, returns.
 func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error) {
 	start := time.Now()
 

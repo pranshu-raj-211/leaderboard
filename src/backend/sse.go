@@ -199,6 +199,7 @@ func StreamLeaderboard(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Writer.Header().Set("X-Accel-Buffering", "no")
 	c.Writer.Flush()
 
 	metrics.ActiveSSEConnections.Inc()
@@ -230,7 +231,7 @@ func StreamLeaderboard(c *gin.Context) {
 			_, err := fmt.Fprintf(c.Writer, ": ping\n\n")
 			if err != nil {
 				metrics.DroppedSSEConnections.Inc()
-				config.Info("Heartbeat failed, closing SSE conn", map[string]any{"client ID": client.ID})
+				config.Info("Heartbeat failed, closing SSE conn", map[string]any{"Error": err, "client ID": client.ID})
 				return
 			}
 			c.Writer.Flush()
