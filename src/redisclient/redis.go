@@ -32,9 +32,6 @@ func InitRedis() {
 
 func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result int) error {
 	start := time.Now()
-	defer func() {
-		metrics.RedisLatency.Observe(time.Since(start).Seconds())
-	}()
 	updateStart := time.Now()
 	switch result {
 	case 0:
@@ -55,15 +52,13 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 				"result":    result,
 			})
 	}
+	metrics.RedisLatency.Observe(time.Since(start).Seconds())
 	metrics.LeaderboardUpdateDuration.Observe(time.Since(updateStart).Seconds())
 	return nil
 }
 
 func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error) {
 	start := time.Now()
-	defer func() {
-		metrics.RedisLatency.Observe(time.Since(start).Seconds())
-	}()
 
 	scores, err := redisClient.ZRevRangeWithScores(ctx, key, 0, n-1).Result()
 

@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TODO: size limits of result message and authentication for game servers needs to be set up
+
 func SubmitGameResults(c *gin.Context) {
 	var game models.GameResult
 	if err := c.ShouldBindJSON(&game); err != nil {
