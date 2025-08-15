@@ -35,6 +35,13 @@ type LeaderboardBroadcaster struct {
 	clientCounter int64
 }
 
+// CreateLeaderboardBroadcaster creates and returns a new LeaderboardBroadcaster.
+// 
+// The returned broadcaster has an internal cancelable context, an initialized
+// client map, and a WaitGroup entry for a background goroutine that polls for
+// leaderboard changes. A background goroutine running detectLeaderboardChanges
+// is started before this function returns. Call StopBroadcast on the returned
+// broadcaster to cancel the background work and clean up connected clients.
 func CreateLeaderboardBroadcaster() *LeaderboardBroadcaster {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -184,6 +191,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 	}
 }
 
+// and ensures the client is removed from the broadcaster when the handler returns.
 func StreamLeaderboard(c *gin.Context) {
 	metrics.ConcurrentClients.Inc()
 	defer metrics.ConcurrentClients.Dec()
