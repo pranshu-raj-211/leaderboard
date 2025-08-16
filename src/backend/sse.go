@@ -141,13 +141,6 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	}
 }
 
-// TODO: change to dependency injection
-var broadcaster *LeaderboardBroadcaster
-
-func SetBroadcaster(b *LeaderboardBroadcaster) {
-	broadcaster = b
-}
-
 // poll redis, dedup leaderboard values, push to broadcast to all clients
 func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 	defer lb.wg.Done()
@@ -192,7 +185,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 }
 
 // and ensures the client is removed from the broadcaster when the handler returns.
-func StreamLeaderboard(c *gin.Context) {
+func (lb *LeaderboardBroadcaster) StreamLeaderboard(c *gin.Context) {
 	metrics.ConcurrentClients.Inc()
 	defer metrics.ConcurrentClients.Dec()
 
@@ -206,8 +199,8 @@ func StreamLeaderboard(c *gin.Context) {
 	config.Info("New SSE conn", map[string]any{})
 	defer metrics.ActiveSSEConnections.Dec()
 
-	client, channel := broadcaster.AddClient()
-	defer broadcaster.RemoveClient(client)
+	client, channel := lb.AddClient()
+	defer lb.RemoveClient(client)
 
 	heartbeatTicker := time.NewTicker(time.Duration(config.AppConfig.Server.HeartbeatIntervalSeconds) * time.Second)
 	defer heartbeatTicker.Stop()
