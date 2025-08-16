@@ -2,6 +2,7 @@ package redisclient
 
 import (
 	"context"
+	"errors"
 	"leaderboard/src/config"
 	"leaderboard/src/metrics"
 	"time"
@@ -20,12 +21,14 @@ func InitRedis() {
 			DB:       config.AppConfig.Redis.DB,
 		})
 
-		_, err := redisClient.Ping(context.Background()).Result()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_, err := redisClient.Ping(ctx).Result()
+		cancel()
 		// keep retrying until redis is connected, fatal otherwise
 		if err == nil {
 			return
 		}
-		config.Error("Failed to connect to redis client, retrying", map[string]any{"Error": err})
+		config.Error("Failed to connect to redis client, retrying", map[string]any{"Error": err, "tried": i + 1, "maxRetries": maxRetries})
 		time.Sleep(2 * time.Second)
 	}
 	config.Fatal("Could not connect to redis client after max retries", map[string]any{"Tried": maxRetries})
@@ -62,7 +65,7 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 	metrics.LeaderboardUpdateDuration.Observe(time.Since(updateStart).Seconds())
 
 	if err != nil {
-		return config.Error("Failed to update leaderboard", map[string]any{"Error": err})
+		return config.Error("Failed to update leaderboard", map[string]any{"Error": err, "Player1 ID": player1ID, "Player2 ID": player2ID, "Result": result})
 	}
 
 	return nil
@@ -86,14 +89,16 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 // GetPlayerScore returns the leaderboard rank and score for the given player ID in the specified sorted set key.
 //
 // The function queries Redis for the member's rank and score and observes the Redis latency metric before returning.
-// If the player is not present, Redis returns redis.Nil; in that case the error will be redis.Nil and the returned
-// rank and score will be zero. Any other Redis error is returned to the caller as well.
+// If the player is not present, Redis returns redis.Nil; in that case the 0,0, nil is returned.
+// Any other Redis error is returned to the caller.
 func GetPlayerScore(ctx context.Context, key string, playerID string) (int64, float64, error) {
 	start := time.Now()
 
 	player_info, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
 	metrics.RedisLatency.Observe(time.Since(start).Seconds())
-	if err != redis.Nil {
+	if errors.Is(err, redis.Nil) {
+		//player not found
+		config.Info("Player not found", map[string]any{"Player ID": playerID, "source": "GetPlayerScore"})
 		return 0, 0, redis.Nil
 	}
 	if err != nil {
