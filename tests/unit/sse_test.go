@@ -7,10 +7,8 @@ import (
 
 func TestBroadcasterCreation(t *testing.T) {
 	b := backend.CreateLeaderboardBroadcaster()
-	switch v := interface{}(b).(type) {
-	case *backend.LeaderboardBroadcaster:
-		// correct type
-	default:
-		t.Errorf("Expected *backend.LeaderboardBroadcaster, got %T", v)
+	defer b.StopBroadcast()
+	if _, ok:=any(b).(*backend.LeaderboardBroadcaster); !ok{
+		t.Fatalf("Expected *backend.LeaderboardBroadCaster, got %T", b)
 	}
 }
