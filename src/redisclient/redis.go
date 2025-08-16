@@ -28,7 +28,7 @@ func InitRedis() {
 		if err == nil {
 			return
 		}
-		config.Error("Failed to connect to redis client, retrying", map[string]any{"Error": err, "tried": i + 1, "maxRetries": maxRetries})
+		config.Error("Failed to connect to redis client, retrying", map[string]any{"Error": err, "attempted": i + 1, "maxRetries": maxRetries})
 		time.Sleep(2 * time.Second)
 	}
 	config.Fatal("Could not connect to redis client after max retries", map[string]any{"Tried": maxRetries})
@@ -65,7 +65,7 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 	metrics.LeaderboardUpdateDuration.Observe(time.Since(updateStart).Seconds())
 
 	if err != nil {
-		return config.Error("Failed to update leaderboard", map[string]any{"Error": err, "Player1 ID": player1ID, "Player2 ID": player2ID, "Result": result})
+		return config.Error("Failed to update leaderboard", map[string]any{"Error": err, "player1ID": player1ID, "player2ID": player2ID, "Result": result})
 	}
 
 	return nil
@@ -94,16 +94,16 @@ func GetTopNPlayers(ctx context.Context, key string, n int64) ([]redis.Z, error)
 func GetPlayerScore(ctx context.Context, key string, playerID string) (int64, float64, error) {
 	start := time.Now()
 
-	player_info, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
+	playerInfo, err := redisClient.ZRankWithScore(ctx, key, playerID).Result()
 	metrics.RedisLatency.Observe(time.Since(start).Seconds())
 	if errors.Is(err, redis.Nil) {
 		//player not found
 		config.Info("Player not found", map[string]any{"Player ID": playerID, "source": "GetPlayerScore"})
-		return 0, 0, redis.Nil
+		return 0, 0, nil
 	}
 	if err != nil {
 		return 0, 0, config.Error("Something went wrong while getting player stats", map[string]any{"player_id": playerID, "Error": err})
 	}
 
-	return player_info.Rank, player_info.Score, nil
+	return playerInfo.Rank, playerInfo.Score, nil
 }
