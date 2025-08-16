@@ -36,7 +36,7 @@ type LeaderboardBroadcaster struct {
 }
 
 // CreateLeaderboardBroadcaster creates and returns a new LeaderboardBroadcaster.
-// 
+//
 // The returned broadcaster has an internal cancelable context, an initialized
 // client map, and a WaitGroup entry for a background goroutine that polls for
 // leaderboard changes. A background goroutine running detectLeaderboardChanges
@@ -141,7 +141,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	}
 }
 
-// package level var
+// TODO: change to dependency injection
 var broadcaster *LeaderboardBroadcaster
 
 func SetBroadcaster(b *LeaderboardBroadcaster) {
@@ -199,6 +199,7 @@ func StreamLeaderboard(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Writer.Header().Set("X-Accel-Buffering", "no")
 	c.Writer.Flush()
 
 	metrics.ActiveSSEConnections.Inc()
@@ -208,17 +209,32 @@ func StreamLeaderboard(c *gin.Context) {
 	client, channel := broadcaster.AddClient()
 	defer broadcaster.RemoveClient(client)
 
+	heartbeatTicker := time.NewTicker(time.Duration(config.AppConfig.Server.HeartbeatIntervalSeconds) * time.Second)
+	defer heartbeatTicker.Stop()
+
 	for {
 		select {
 		case update, ok := <-channel:
 			if !ok {
-				// channel closed
-				config.Info("Channel found closed on update", map[string]any{})
+				config.Info("Channel found closed on update", map[string]any{"client ID": client.ID})
 				return
 			}
-			fmt.Fprintf(c.Writer, "data: %s\n\n", update.Data)
+			_, err := fmt.Fprintf(c.Writer, "data: %s\n\n", update.Data)
+			if err != nil {
+				metrics.DroppedSSEConnections.Inc()
+				config.Info("Abruptly closed SSE conn", map[string]any{"Error": err, "client ID": client.ID})
+				return
+			}
 			c.Writer.Flush()
 			metrics.SSEMessagesSent.Inc()
+		case <-heartbeatTicker.C:
+			_, err := fmt.Fprintf(c.Writer, ": ping\n\n")
+			if err != nil {
+				metrics.DroppedSSEConnections.Inc()
+				config.Info("Heartbeat failed, closing SSE conn", map[string]any{"Error": err, "client ID": client.ID})
+				return
+			}
+			c.Writer.Flush()
 		case <-c.Request.Context().Done():
 			metrics.DroppedSSEConnections.Inc()
 			config.Info("Closed SSE conn", map[string]any{"client ID": client.ID})

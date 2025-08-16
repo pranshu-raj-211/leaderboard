@@ -8,6 +8,7 @@ server:
   port: 8080
   broadcast_buffer_size: 100
   polling_interval_seconds: 5
+  heartbeat_interval_seconds: 20
 leaderboard:
   update_interval_secs: 5
   top_players_limit: 10
