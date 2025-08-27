@@ -34,6 +34,8 @@ services:
       - "3000:3000"
     environment:
       - GF_LOG_LEVEL=error
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
     depends_on:
       - prometheus
     networks:
