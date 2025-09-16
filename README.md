@@ -1,5 +1,11 @@
 # Real-time Game Leaderboard
 
+Blogs on this project
+- [28k+ conns, zero messages](https://blog.pranshu-raj.me/posts/implementing-correct-fanout)
+- [Optimizing docker image builds](https://blog.pranshu-raj.me/posts/optimizing-docker-builds)
+- (Upcoming) [Backpressure](https://blog.pranshu-raj.me/posts/understanding-backpressure/)
+
+
 A high-performance real-time game leaderboard system built with Go, Redis, and Server-Sent Events (SSE).
 
 ## Features
@@ -149,7 +155,7 @@ The streaming script is based off of [Eran Yanay's repo for his Gophercon talk](
 - [ ] Implement data persistence backup and aggregation (Postgres, currently in the works)
 - [ ] Add request validation middleware
 - [ ] Add player history tracking (and translate ids to usernames before sending)
-- [ ] Improve metrics and dashboard configs
+- [ ] Improve metrics and dashboard configs (quantiles)
 - [ ] Redis pipelining and connection pooling (improve other access patterns)
 
 ## Ideas to check out
@@ -160,9 +166,9 @@ The streaming script is based off of [Eran Yanay's repo for his Gophercon talk](
 ## Interesting things I learnt while working on this
 
 1. Docker build optimixation - [blog](https://blog.pranshu-raj.me/posts/optimizing-docker-builds/)
-2. Grafana dashboard config for persistence across builds
+2. Grafana dashboard config for persistence across builds (blog on this soon)
 3. Mutexes, race conditions (got to see these happen in my code)
-4. Go concurrency - goroutines and channels
+4. Go concurrency - goroutines and channels (and actors)
 
 ## Things I need to learn more about
 1. Testing
