@@ -10,5 +10,6 @@ Dockerfile
 logs/
 grafana/
 prometheus/
+client/
 
 .vscode/
