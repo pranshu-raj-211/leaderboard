@@ -11,6 +11,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+type broadcaster interface {
+	StopBroadcast()
+	StreamLeaderboard(*gin.Context)
+}
+
 func main() {
 	config.InitLogger()
 	if err := config.LoadConfig("config.yaml"); err != nil {
@@ -25,17 +30,15 @@ func main() {
 	redisclient.InitRedis()
 	metrics.InitMetrics()
 
-	broadcaster := backend.CreateLeaderboardBroadcaster()
+	var broadcaster broadcaster = backend.CreateLeaderboardBroadcaster()
 	defer broadcaster.StopBroadcast()
-
-	backend.SetBroadcaster(broadcaster)
 
 	r := gin.Default()
 
 	r.Use(metrics.MetricsMiddleware())
 
 	r.POST("/submit-game", backend.SubmitGameResults)
-	r.GET("/stream-leaderboard", backend.StreamLeaderboard)
+	r.GET("/stream-leaderboard", broadcaster.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.GET("/player/:id/stats", backend.GetPlayerResults)
 	r.GET("/leaderboard", backend.GetLeaderboard)
