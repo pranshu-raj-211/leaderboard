@@ -56,7 +56,7 @@ func CreateLeaderboardBroadcaster() *LeaderboardBroadcaster {
 	return lb
 }
 
-// should have an endpoint, with proper auth - admin only
+// TODO: should have an endpoint, with proper auth - admin only
 func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	lb.cancel()
 	lb.wg.Wait()
@@ -184,11 +184,8 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 	}
 }
 
-// and ensures the client is removed from the broadcaster when the handler returns.
+// handler for /stream-leaderboard
 func (lb *LeaderboardBroadcaster) StreamLeaderboard(c *gin.Context) {
-	metrics.ConcurrentClients.Inc()
-	defer metrics.ConcurrentClients.Dec()
-
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")

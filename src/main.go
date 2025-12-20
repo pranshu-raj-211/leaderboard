@@ -17,6 +17,7 @@ type broadcaster interface {
 }
 
 func main() {
+	// TODO: use config loading before logger init (use config vars in InitLogger)
 	config.InitLogger()
 	if err := config.LoadConfig("config.yaml"); err != nil {
 		config.Fatal("Failed to load config", map[string]any{"err": err})
