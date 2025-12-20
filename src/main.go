@@ -31,15 +31,15 @@ func main() {
 	redisclient.InitRedis()
 	metrics.InitMetrics()
 
-	var broadcaster broadcaster = backend.CreateLeaderboardBroadcaster()
-	defer broadcaster.StopBroadcast()
+	lb := backend.CreateLeaderboardBroadcaster()
+	defer lb.StopBroadcast()
 
 	r := gin.Default()
 
 	r.Use(metrics.MetricsMiddleware())
 
 	r.POST("/submit-game", backend.SubmitGameResults)
-	r.GET("/stream-leaderboard", broadcaster.StreamLeaderboard)
+	r.GET("/stream-leaderboard", lb.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.GET("/player/:id/stats", backend.GetPlayerResults)
 	r.GET("/leaderboard", backend.GetLeaderboard)
