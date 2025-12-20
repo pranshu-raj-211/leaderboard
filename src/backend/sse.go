@@ -20,10 +20,11 @@ type LeaderboardUpdate struct {
 }
 
 type Client struct {
-	ID      int64
-	channel chan LeaderboardUpdate
-	ctx     context.Context
-	cancel  context.CancelFunc
+	ID        int64
+	channel   chan LeaderboardUpdate
+	ctx       context.Context
+	cancel    context.CancelFunc
+	closeOnce sync.Once
 }
 
 type LeaderboardBroadcaster struct {
@@ -56,7 +57,7 @@ func CreateLeaderboardBroadcaster() *LeaderboardBroadcaster {
 	return lb
 }
 
-// should have an endpoint, with proper auth - admin only
+// TODO: should have an endpoint, with proper auth - admin only
 func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	lb.cancel()
 	lb.wg.Wait()
@@ -66,7 +67,7 @@ func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	// remove all clients
 	for _, client := range lb.clients {
 		client.cancel()
-		close(client.channel)
+		client.closeOnce.Do(func() { close(client.channel) })
 	}
 }
 
@@ -96,7 +97,7 @@ func (lb *LeaderboardBroadcaster) RemoveClient(client *Client) {
 	if _, exists := lb.clients[client.ID]; exists {
 		delete(lb.clients, client.ID)
 		client.cancel()
-		close(client.channel)
+		client.closeOnce.Do(func() { close(client.channel) })
 	}
 }
 
@@ -134,7 +135,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 			if _, exists := lb.clients[client.ID]; exists {
 				delete(lb.clients, client.ID)
 				client.cancel()
-				close(client.channel)
+				client.closeOnce.Do(func() { close(client.channel) })
 			}
 		}
 		lb.clientsMutex.Unlock()
@@ -184,11 +185,8 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 	}
 }
 
-// and ensures the client is removed from the broadcaster when the handler returns.
+// handler for /stream-leaderboard
 func (lb *LeaderboardBroadcaster) StreamLeaderboard(c *gin.Context) {
-	metrics.ConcurrentClients.Inc()
-	defer metrics.ConcurrentClients.Dec()
-
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")

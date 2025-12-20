@@ -12,7 +12,7 @@ import (
 
 var (
 	ip          = flag.String("ip", "127.0.0.1", "Server IP")
-	connections = flag.Int("conn", 20000, "Number of SSE connections")
+	connections = flag.Int("conn", 10000, "Number of SSE connections")
 )
 
 func main() {
@@ -40,8 +40,6 @@ Example usage: ./client -ip=127.0.0.1 -conn=10000
 
 	// keep alive to check persistence
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(30 * time.Second)
 	}
-
-	// need to close connections gracefully
 }

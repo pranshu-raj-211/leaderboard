@@ -74,6 +74,7 @@ var (
 		},
 	)
 
+	// TODO: can we distinguish between client disconnects and unexpected terminations?
 	DroppedSSEConnections = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "dropped_sse_connections_total",
