@@ -1,7 +1,7 @@
 package models
 
 import (
-	"leaderboard/src/config"
+	"fmt"
 )
 
 type GameResult struct {
@@ -12,15 +12,27 @@ type GameResult struct {
 	Result    int    `json:"result" binding:"gte=0,lte=2"`
 }
 
+type ValidationError struct {
+	Field  string
+	Reason string
+}
+
+func (e *ValidationError) Error() string {
+	return fmt.Sprintf("invalid %s: %s", e.Field, e.Reason)
+}
+
 func (g *GameResult) Validate() error {
 	if g.GameID == "" {
-		return config.Error("game_id cannot be empty", map[string]any{"GameID": g.GameID})
+		return &ValidationError{Field:"GameID", Reason:"empty string not allowed"}
 	}
 	if g.Player1ID == g.Player2ID {
-		return config.Error("Player IDs cannot be the same", map[string]any{"Player1ID": g.Player1ID, "Player2ID": g.Player2ID, "GameID": g.GameID})
+		return &ValidationError{Field: "player_id", Reason: "player ids cannot be the same"}
 	}
 	if g.Result < 0 || g.Result > 2 {
-		return config.Error("Game result must be between 0 and 2", map[string]any{"GameID": g.GameID, "Result": g.Result})
+		return &ValidationError{Field: "result", Reason: "result must be an integer between 0 and 2 inclusive"}
+	}
+	if g.ServerID == "" {
+		return &ValidationError{Field: "server_id", Reason: "Empty string not allowed"}
 	}
 	return nil
 }
