@@ -1,6 +1,7 @@
 package unit_test
 
 import (
+	"errors"
 	"leaderboard/src/models"
 	"testing"
 )
@@ -73,11 +74,24 @@ func TestGameResult(t *testing.T) {
 		t.Run(sample.name, func(t *testing.T) {
 			got := sample.input.Validate()
 
-			if got == nil && sample.wantErr {
-				t.Errorf("expected an error, got none")
-			}
-			if got != nil && !sample.wantErr {
-				t.Errorf("did not expect an error, got one")
+			if sample.wantErr {
+				if got == nil {
+					t.Fatalf("expected error, got none")
+				}
+
+				var ve *models.ValidationError
+				if !errors.As(got, &ve) {
+					t.Fatalf("expected validation error, got something else: %T", got)
+				}
+
+				// errors.As sets the target to the error value. That is the reason following check works
+				if sample.wantErrField != ve.Field {
+					t.Fatalf("Expected error with %s, got %s", sample.wantErrField, got.Error())
+				}
+			} else {
+				if got != nil {
+					t.Fatalf("unexpected error during validation: %T:\n %s", got, got.Error())
+				}
 			}
 		})
 	}
