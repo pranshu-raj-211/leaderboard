@@ -105,3 +105,7 @@ func InitLogger() {
 func GetLogger() *zap.Logger {
 	return logger
 }
+
+func SetLogger(l *zap.Logger) {
+	logger = l
+}

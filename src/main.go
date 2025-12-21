@@ -31,7 +31,8 @@ func main() {
 	redisclient.InitRedis()
 	metrics.InitMetrics()
 
-	lb := backend.CreateLeaderboardBroadcaster()
+	// TODO: checkout why to prefer broadcast interface here
+	var lb broadcaster = backend.CreateLeaderboardBroadcaster()
 	defer lb.StopBroadcast()
 
 	r := gin.Default()
