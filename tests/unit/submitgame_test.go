@@ -17,7 +17,6 @@ func TestSubmitGameResults_Success(t *testing.T) {
 	gameResult := &models.GameResult{GameID: "12", ServerID: "54", Player1ID: "1", Player2ID: "2", Result: 2}
 	gameJSON, _ := json.Marshal(gameResult)
 	req, _ := http.NewRequest("POST", "/submit-game", strings.NewReader(string(gameJSON)))
-	// req.Header.Set("Content-Type", "application/json")
 
 	r.ServeHTTP(w, req)
 
