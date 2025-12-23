@@ -23,3 +23,4 @@ This is related to the `/submit-game` endpoint, required for game servers to sub
 
 Designing a test for this made me realize how tightly everything is coupled in my code. I did make a basic version of dependency injection for the broadcaster in the SSE streaming code, but Redis and other dependencies are still as tightly coupled as ever. This is a problem, since I'd have to use those as is for testing, while I agree things can be done without mocking, mocks will make things simpler, and if used correctly, make the code easier to reason about (provided I do not go overboard with things).
 
+DI is something I really looked forward to using in FastAPI, it made my life a whole lot easier, and I look forward to understanding how it's done in production systems running Go.
