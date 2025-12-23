@@ -54,6 +54,7 @@ func UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result 
 		pipe.ZIncrBy(ctx, "leaderboard", 0.5, player2ID)
 		_, err = pipe.Exec(ctx)
 	default:
+		// TODO: Fix this - validation done earlier at submit-game
 		return config.Error("Invalid game result, did not update leaderboard",
 			map[string]any{
 				"player1ID": player1ID,
