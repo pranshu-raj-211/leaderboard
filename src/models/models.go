@@ -23,7 +23,7 @@ func (e *ValidationError) Error() string {
 
 func (g *GameResult) Validate() error {
 	if g.GameID == "" {
-		return &ValidationError{Field:"GameID", Reason:"empty string not allowed"}
+		return &ValidationError{Field:"game_id", Reason:"empty string not allowed"}
 	}
 	if g.Player1ID == g.Player2ID {
 		return &ValidationError{Field: "player_id", Reason: "player ids cannot be the same"}
@@ -32,7 +32,7 @@ func (g *GameResult) Validate() error {
 		return &ValidationError{Field: "result", Reason: "result must be an integer between 0 and 2 inclusive"}
 	}
 	if g.ServerID == "" {
-		return &ValidationError{Field: "server_id", Reason: "Empty string not allowed"}
+		return &ValidationError{Field: "server_id", Reason: "empty string not allowed"}
 	}
 	return nil
 }

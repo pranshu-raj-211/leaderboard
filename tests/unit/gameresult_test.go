@@ -15,7 +15,7 @@ type testCase struct {
 
 var testCases = []testCase{
 	{
-		name:         "Valid Player1 win",
+		name:         "valid Player1 win",
 		input:        models.GameResult{GameID: "123", Player1ID: "1", Player2ID: "2", ServerID: "2", Result: 2},
 		wantErr:      false,
 		wantErrField: "",

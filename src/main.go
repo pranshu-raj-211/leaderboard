@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"leaderboard/src/backend"
 	"leaderboard/src/config"
@@ -14,6 +15,12 @@ import (
 type broadcaster interface {
 	StopBroadcast()
 	StreamLeaderboard(*gin.Context)
+}
+
+type RedisLeaderboard struct {}
+
+func (RedisLeaderboard) UpdateLeaderboard(ctx context.Context, player1ID string, player2ID string, result int) error {
+	return redisclient.UpdateLeaderboard(ctx, player1ID, player2ID, result)
 }
 
 func main() {
@@ -35,11 +42,13 @@ func main() {
 	var lb broadcaster = backend.CreateLeaderboardBroadcaster()
 	defer lb.StopBroadcast()
 
+	store := RedisLeaderboard{}
+
 	r := gin.Default()
 
 	r.Use(metrics.MetricsMiddleware())
 
-	r.POST("/submit-game", backend.SubmitGameResults)
+	r.POST("/submit-game", backend.SubmitGameResults(store))
 	r.GET("/stream-leaderboard", lb.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.GET("/player/:id/stats", backend.GetPlayerResults)
