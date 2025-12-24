@@ -27,8 +27,8 @@ func main() {
 	metrics.InitMetrics()
 	// naming will need changes, future postgres dep will add a postgres client
 	client, err := redisclient.NewRedisClient(*config.AppConfig, config.GetLogger())
-	if err!= nil{
-		config.Fatal("Could not connect to redis, shutting down", map[string]any{"err":err})
+	if err != nil {
+		config.Fatal("Could not connect to redis, shutting down", map[string]any{"err": err})
 	}
 
 	store := redisclient.CreateRedisLeaderboard(client)
@@ -49,5 +49,7 @@ func main() {
 
 	address := fmt.Sprintf("%s:%d", config.AppConfig.Server.Host, config.AppConfig.Server.Port)
 
-	r.Run(address)
+	if err := r.Run(address); err != nil {
+		config.Fatal("failed to start server", map[string]any{"err": err})
+	}
 }

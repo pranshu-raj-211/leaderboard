@@ -8,7 +8,6 @@ import (
 	"leaderboard/src/config"
 	"leaderboard/src/interfaces"
 	"leaderboard/src/metrics"
-	"leaderboard/src/redisclient"
 	"sync"
 	"time"
 
@@ -35,7 +34,7 @@ type LeaderboardBroadcaster struct {
 	cancel        context.CancelFunc
 	wg            sync.WaitGroup
 	clientCounter int64
-	store 		  interfaces.LeaderboardStore
+	store         interfaces.LeaderboardStore
 }
 
 // CreateLeaderboardBroadcaster creates and returns a new LeaderboardBroadcaster.
@@ -45,13 +44,14 @@ type LeaderboardBroadcaster struct {
 // leaderboard changes. A background goroutine running detectLeaderboardChanges
 // is started before this function returns. Call StopBroadcast on the returned
 // broadcaster to cancel the background work and clean up connected clients.
-func CreateLeaderboardBroadcaster(store *redisclient.RedisLeaderboard) *LeaderboardBroadcaster {
+func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore) *LeaderboardBroadcaster {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	lb := &LeaderboardBroadcaster{
 		clients: make(map[int64]*Client),
 		ctx:     ctx,
 		cancel:  cancel,
+		store:   store,
 	}
 
 	lb.wg.Add(1)

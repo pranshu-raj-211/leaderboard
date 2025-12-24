@@ -43,13 +43,15 @@ func NewRedisClient(cfg config.Config, logger *zap.Logger) (*redis.Client, error
 }
 
 func CreateRedisLeaderboard(client *redis.Client) *RedisLeaderboard {
-	return &RedisLeaderboard{client:client}
+	return &RedisLeaderboard{client: client}
 }
 
 // The function also observes RedisLatency and LeaderboardUpdateDuration metrics after performing the update.
-func (store RedisLeaderboard) UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result int) error {
+func (store *RedisLeaderboard) UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result int) error {
 	start := time.Now()
 	updateStart := time.Now()
+	// ? why are we using two timers?
+
 	var err error
 
 	switch result {

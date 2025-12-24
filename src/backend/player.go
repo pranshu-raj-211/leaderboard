@@ -18,7 +18,7 @@ func GetPlayerResults(store interfaces.LeaderboardStore) gin.HandlerFunc {
 		rank, score, err := store.GetPlayerScore(ctx, playerID)
 		if err != nil {
 			config.Error("Error getting player score", map[string]any{"Error": err})
-			ctx.JSON(500, gin.H{"error": "could not fetch player stats"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch player stats"})
 			return
 		}
 		config.Info("Results from player stats api", map[string]any{"id": playerID, "rank": rank, "score": score})
