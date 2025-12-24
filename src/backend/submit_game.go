@@ -15,7 +15,6 @@ import (
 //
 // On invalid JSON the handler responds with HTTP 400 and an error message. If updating the leaderboard fails
 // it responds with HTTP 400 and the underlying error message. On success it responds with HTTP 200.
-
 func SubmitGameResults(store interfaces.LeaderboardStore) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var game models.GameResult

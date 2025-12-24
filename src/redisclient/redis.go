@@ -49,8 +49,6 @@ func CreateRedisLeaderboard(client *redis.Client) *RedisLeaderboard {
 // The function also observes RedisLatency and LeaderboardUpdateDuration metrics after performing the update.
 func (store *RedisLeaderboard) UpdateLeaderboard(ctx context.Context, player1ID, player2ID string, result int) error {
 	start := time.Now()
-	updateStart := time.Now()
-	// ? why are we using two timers?
 
 	var err error
 
@@ -77,7 +75,7 @@ func (store *RedisLeaderboard) UpdateLeaderboard(ctx context.Context, player1ID,
 			})
 	}
 	metrics.RedisLatency.Observe(time.Since(start).Seconds())
-	metrics.LeaderboardUpdateDuration.Observe(time.Since(updateStart).Seconds())
+	metrics.LeaderboardUpdateDuration.Observe(time.Since(start).Seconds())
 
 	if err != nil {
 		return config.Error("Failed to update leaderboard", map[string]any{"Error": err, "player1ID": player1ID, "player2ID": player2ID, "Result": result})
@@ -89,7 +87,7 @@ func (store *RedisLeaderboard) UpdateLeaderboard(ctx context.Context, player1ID,
 // GetTopNPlayers returns up to n entries from the sorted set stored at key ordered by highest score first.
 // It calls Redis ZRevRangeWithScores to fetch the top N members with their scores and returns the resulting []redis.Z.
 // On success, returns top N scores, sorted in reverse order (highest first). On failure, records error, returns.
-func (store RedisLeaderboard) GetTopNPlayers(ctx context.Context, limit int64) ([]interfaces.LeaderboardEntry, error) {
+func (store *RedisLeaderboard) GetTopNPlayers(ctx context.Context, limit int64) ([]interfaces.LeaderboardEntry, error) {
 	start := time.Now()
 
 	zs, err := store.client.ZRevRangeWithScores(ctx, "leaderboard", 0, limit-1).Result()
@@ -118,7 +116,7 @@ func (store RedisLeaderboard) GetTopNPlayers(ctx context.Context, limit int64) (
 // The function queries Redis for the member's rank and score and observes the Redis latency metric before returning.
 // If the player is not present, Redis returns redis.Nil; in that case the 0,0, nil is returned.
 // Any other Redis error is returned to the caller.
-func (store RedisLeaderboard) GetPlayerScore(ctx context.Context, playerID string) (int64, float64, error) {
+func (store *RedisLeaderboard) GetPlayerScore(ctx context.Context, playerID string) (int64, float64, error) {
 	start := time.Now()
 
 	playerInfo, err := store.client.ZRankWithScore(ctx, "leaderboard", playerID).Result()

@@ -25,12 +25,13 @@ func (store *fakeSortedSet) UpdateLeaderboard(ctx context.Context, player1ID str
 	return nil
 }
 
+// TODO: implement better mocks
+
 func (store *fakeSortedSet) GetPlayerScore(ctx context.Context, playerID string) (int64, float64, error) {
 	return 1, 1.0, nil
 }
 
 func (store *fakeSortedSet) GetTopNPlayers(ctx context.Context, limit int64) ([]interfaces.LeaderboardEntry, error) {
-	// TODO: implement good mocks
 	return nil, nil
 }
 

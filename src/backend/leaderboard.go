@@ -3,6 +3,7 @@ package backend
 import (
 	"leaderboard/src/config"
 	"leaderboard/src/interfaces"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,10 +14,10 @@ func GetLeaderboard(store interfaces.LeaderboardStore) gin.HandlerFunc {
 		results, err := store.GetTopNPlayers(ctx, int64(config.AppConfig.Leaderboard.TopPlayersLimit))
 		if err != nil {
 			config.Error("Could not fetch leaderboard from Redis", map[string]any{"Error": err})
-			ctx.JSON(500, gin.H{"error": "could not fetch leaderboard"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not fetch leaderboard"})
 			return
 		}
 
-		ctx.JSON(200, results)
+		ctx.JSON(http.StatusOK, results)
 	}
 }
