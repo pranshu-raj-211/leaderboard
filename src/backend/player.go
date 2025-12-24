@@ -2,24 +2,26 @@ package backend
 
 import (
 	"leaderboard/src/config"
-	"leaderboard/src/redisclient"
+	"leaderboard/src/interfaces"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetPlayerResults(c *gin.Context) {
-	playerID := c.Param("id")
-	if playerID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "player id required to fetch stats."})
-		return
+func GetPlayerResults(store interfaces.LeaderboardStore) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		playerID := ctx.Param("id")
+		if playerID == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "player id required to fetch stats."})
+			return
+		}
+		rank, score, err := store.GetPlayerScore(ctx, playerID)
+		if err != nil {
+			config.Error("Error getting player score", map[string]any{"Error": err})
+			ctx.JSON(500, gin.H{"error": "could not fetch player stats"})
+			return
+		}
+		config.Info("Results from player stats api", map[string]any{"id": playerID, "rank": rank, "score": score})
+		ctx.JSON(http.StatusOK, gin.H{"rank": rank, "score": score})
 	}
-	rank, score, err := redisclient.GetPlayerScore(c, "leaderboard", playerID)
-	if err != nil {
-		config.Error("Error getting player score", map[string]any{"Error": err})
-		c.JSON(500, gin.H{"error": "could not fetch player stats"})
-		return
-	}
-	config.Info("Results from player stats api", map[string]any{"id": playerID, "rank": rank, "score": score})
-	c.JSON(http.StatusOK, gin.H{"rank": rank, "score": score})
 }
