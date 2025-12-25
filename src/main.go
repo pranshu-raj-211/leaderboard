@@ -45,7 +45,7 @@ func main() {
 	r.GET("/stream-leaderboard", lb.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.GET("/player/:id/stats", backend.GetPlayerResults(store))
-	r.GET("/leaderboard", backend.GetLeaderboard(store))
+	r.GET("/leaderboard", backend.GetLeaderboard(store, int64(config.AppConfig.Leaderboard.TopPlayersLimit)))
 
 	address := fmt.Sprintf("%s:%d", config.AppConfig.Server.Host, config.AppConfig.Server.Port)
 

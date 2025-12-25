@@ -43,3 +43,10 @@ There's also the design issues - this code doesn't really follow most of Go's de
 - Testing HTTP endpoints uses all of the functionality that'd be in a normal HTTP call, just internally - marshaling, unmarshaling, sending data in bytes. JSON binding is taken care of by Gin by default.
 - Decoupling dependencies for testing code, never call main while testing, tests instead build their own router.
 - Design tests before building them, stricter than code in fact, make the invariants clear before building tests.
+
+### Get Leaderboard Top N (`leaderboard.go`)
+
+
+### Get Player Score (`player.go`)
+Weird issue I ran into - `encoding/json` can only work on exported fields, not unexported ones. This made my test `TestPlayer_Success` fail over and over again with the error expected rank 1, got 0, which baffled me since there was no indication as to why this error was occuring like this. The fix was to change the field names in the resp struct to CamelCase (making them exported fields) from `rank` to `Rank` and from `score` to `Score`. Why does json ignore the unexported fields?
+
