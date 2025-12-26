@@ -24,6 +24,13 @@ func main() {
 		"Port":          config.AppConfig.Server.Port,
 	})
 
+	cfg := &backend.BroadcasterConfig{
+		BroadcastBufferSize: config.AppConfig.Server.BroadcastBufferSize,
+		PollingIntervalSeconds: config.AppConfig.Leaderboard.UpdateIntervalSecs,
+		TopPlayersLimit: config.AppConfig.Leaderboard.TopPlayersLimit,
+		HeartbeatIntervalSeconds: config.AppConfig.Server.HeartbeatIntervalSeconds,
+	}
+
 	metrics.InitMetrics()
 	// naming will need changes, future postgres dep will add a postgres client
 	client, err := redisclient.NewRedisClient(*config.AppConfig, config.GetLogger())
@@ -34,7 +41,7 @@ func main() {
 	store := redisclient.CreateRedisLeaderboard(client)
 
 	// TODO: checkout why to prefer broadcast interface here
-	var lb interfaces.Broadcaster = backend.CreateLeaderboardBroadcaster(store)
+	var lb interfaces.Broadcaster = backend.CreateLeaderboardBroadcaster(store, cfg)
 	defer lb.StopBroadcast()
 
 	r := gin.Default()
@@ -45,7 +52,7 @@ func main() {
 	r.GET("/stream-leaderboard", lb.StreamLeaderboard)
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.GET("/player/:id/stats", backend.GetPlayerResults(store))
-	r.GET("/leaderboard", backend.GetLeaderboard(store))
+	r.GET("/leaderboard", backend.GetLeaderboard(store, int64(config.AppConfig.Leaderboard.TopPlayersLimit)))
 
 	address := fmt.Sprintf("%s:%d", config.AppConfig.Server.Host, config.AppConfig.Server.Port)
 

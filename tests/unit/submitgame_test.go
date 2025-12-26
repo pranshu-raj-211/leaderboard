@@ -10,7 +10,7 @@ import (
 )
 
 func TestSubmitGameResults_Success(t *testing.T) {
-	store := &fakeSortedSet{}
+	store := &fakeLeaderboardStore{}
 	r := CreateTestRouter(store)
 
 	w := httptest.NewRecorder()
@@ -24,8 +24,8 @@ func TestSubmitGameResults_Success(t *testing.T) {
 		t.Fatalf("expected status code 200, got %d", w.Code)
 	}
 
-	if !store.called {
-		t.Fatalf("expected store called to be true")
+	if !(store.timesCalled == 1) {
+		t.Fatalf("expected store to be called, timesCalled is %d", store.timesCalled)
 	}
 
 	if store.player1ID != "1" || store.player2ID != "2" || store.result != 2 {
@@ -45,20 +45,20 @@ type failureCase struct {
 
 var incorrectJSON = `{"message":"hello"}`
 var missingGameID = models.GameResult{
-		GameID:    "",
-		Player1ID: "1",
-		Player2ID: "2",
-		ServerID:  "s1",
-		Result:    1,
-	}
+	GameID:    "",
+	Player1ID: "1",
+	Player2ID: "2",
+	ServerID:  "s1",
+	Result:    1,
+}
 var missingGameIDJSON, _ = json.Marshal(missingGameID)
 var samePlayerID = models.GameResult{
-			GameID:    "g1",
-			Player1ID: "2",
-			Player2ID: "2",
-			ServerID:  "s1",
-			Result:    1,
-		}
+	GameID:    "g1",
+	Player1ID: "2",
+	Player2ID: "2",
+	ServerID:  "s1",
+	Result:    1,
+}
 var samePlayerIDJSON, _ = json.Marshal(samePlayerID)
 
 var failureTestCases = []failureCase{
@@ -71,11 +71,11 @@ var failureTestCases = []failureCase{
 		gameResult: incorrectJSON,
 	},
 	{
-		name: "Invalid GameResult object - GameID missing",
+		name:       "Invalid GameResult object - GameID missing",
 		gameResult: string(missingGameIDJSON),
 	},
 	{
-		name: "Same Player ids",
+		name:       "Same Player ids",
 		gameResult: string(samePlayerIDJSON),
 	},
 	// too many validation combinations can be tried, not the scope of this test - to be done by test for models instead.
@@ -84,7 +84,7 @@ var failureTestCases = []failureCase{
 func TestSubmitGameResults_Failure(t *testing.T) {
 	for _, testCase := range failureTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			store := &fakeSortedSet{}
+			store := &fakeLeaderboardStore{}
 			r := CreateTestRouter(store)
 			w := httptest.NewRecorder()
 
@@ -96,8 +96,8 @@ func TestSubmitGameResults_Failure(t *testing.T) {
 				t.Fatalf("expected status code not equal to 200")
 			}
 
-			if store.called {
-				t.Fatalf("store should not be called in failure")
+			if store.timesCalled > 0 {
+				t.Fatalf("store should not be called in failure, called %d times", store.timesCalled)
 			}
 		})
 	}

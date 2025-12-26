@@ -43,3 +43,24 @@ There's also the design issues - this code doesn't really follow most of Go's de
 - Testing HTTP endpoints uses all of the functionality that'd be in a normal HTTP call, just internally - marshaling, unmarshaling, sending data in bytes. JSON binding is taken care of by Gin by default.
 - Decoupling dependencies for testing code, never call main while testing, tests instead build their own router.
 - Design tests before building them, stricter than code in fact, make the invariants clear before building tests.
+
+### Get Leaderboard Top N (`leaderboard.go`)
+
+
+### Get Player Score (`player.go`)
+Weird issue I ran into - `encoding/json` can only work on exported fields, not unexported ones. This made my test `TestPlayer_Success` fail over and over again with the error expected rank 1, got 0, which baffled me since there was no indication as to why this error was occuring like this. The fix was to change the field names in the resp struct to CamelCase (making them exported fields) from `rank` to `Rank` and from `score` to `Score`. Why does json ignore the unexported fields?
+
+### Test SSE access pattern (`sse.go`)
+SSE is unarguably the most important access pattern (and the most complicated one too). The code for it is highly coupled, and I can't seem to reduce the coupling by a lot, it works though so it's a good idea to leave it as it is for now.
+
+There's a few things that need to be tested
+1. Client lifecycle (add, remove clients, ensure no leaks happen)
+2. Broadcasting (and handling of clients that are removed while in the middle of a broadcast - concurrency)
+3. Change detection (something changes in store, update is pushed for broadcast)
+4. Shutdown
+
+In the near future graceful shutdown is supposed to be added in order to make the app remove all connections and degrade gracefully. This will augment the shutdown process, though it's not a critical need.
+
+#### Testing client lifecycle
+1. Add client
+

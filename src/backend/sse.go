@@ -35,6 +35,14 @@ type LeaderboardBroadcaster struct {
 	wg            sync.WaitGroup
 	clientCounter int64
 	store         interfaces.LeaderboardStore
+	cfg           BroadcasterConfig
+}
+
+type BroadcasterConfig struct {
+	BroadcastBufferSize      int
+	PollingIntervalSeconds   int
+	TopPlayersLimit          int
+	HeartbeatIntervalSeconds int
 }
 
 // CreateLeaderboardBroadcaster creates and returns a new LeaderboardBroadcaster.
@@ -44,7 +52,7 @@ type LeaderboardBroadcaster struct {
 // leaderboard changes. A background goroutine running detectLeaderboardChanges
 // is started before this function returns. Call StopBroadcast on the returned
 // broadcaster to cancel the background work and clean up connected clients.
-func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore) *LeaderboardBroadcaster {
+func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore, cfg *BroadcasterConfig) *LeaderboardBroadcaster {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	lb := &LeaderboardBroadcaster{
@@ -52,14 +60,22 @@ func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore) *Leaderboar
 		ctx:     ctx,
 		cancel:  cancel,
 		store:   store,
+		cfg:     *cfg,
 	}
 
+	ticker := time.NewTicker(time.Duration(lb.cfg.PollingIntervalSeconds) * time.Second)
+
 	lb.wg.Add(1)
-	go lb.detectLeaderboardChanges()
+	go func() {
+		defer ticker.Stop()
+		lb.detectLeaderboardChanges(ticker.C)
+	}()
+
 	return lb
 }
 
 // TODO: should have an endpoint, with proper auth - admin only
+// TODO: how to use this along with graceful shutdown
 func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	lb.cancel()
 	lb.wg.Wait()
@@ -83,7 +99,7 @@ func (lb *LeaderboardBroadcaster) AddClient() (*Client, <-chan LeaderboardUpdate
 		ID:      lb.clientCounter,
 		ctx:     ctx,
 		cancel:  cancel,
-		channel: make(chan LeaderboardUpdate, config.AppConfig.Server.BroadcastBufferSize),
+		channel: make(chan LeaderboardUpdate, lb.cfg.BroadcastBufferSize),
 	}
 	lb.clients[lb.clientCounter] = client
 	lb.clientsMutex.Unlock()
@@ -103,8 +119,20 @@ func (lb *LeaderboardBroadcaster) RemoveClient(client *Client) {
 	}
 }
 
+// counts the active number of clients, replace later with a field in broadcaster struct
+func (lb *LeaderboardBroadcaster) CountClients() int {
+	lb.clientsMutex.RLock()
+	defer lb.clientsMutex.RUnlock()
+	return int(len(lb.clients))
+}
+
+// to be used only for testing purposes
+func (lb *LeaderboardBroadcaster) BroadcastNow(update *LeaderboardUpdate) {
+	lb.broadcastToAllClients(update)
+}
+
 // broadcastToAllClients sends an update to all connected clients
-func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate) {
+func (lb *LeaderboardBroadcaster) broadcastToAllClients(update *LeaderboardUpdate) {
 	lb.clientsMutex.RLock()
 
 	var clientsToRemove []*Client
@@ -112,7 +140,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	// what to do in case Client channel is full, skip this client (to be changed later - add channel clearing mechanism + alerting)
 	for _, client := range lb.clients {
 		select {
-		case client.channel <- update:
+		case client.channel <- *update:
 		case <-client.ctx.Done():
 			clientsToRemove = append(clientsToRemove, client)
 		default:
@@ -123,7 +151,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 				select {
 				case <-client.channel:
 				default:
-					client.channel <- update
+					client.channel <- *update
 					break drainLoop
 				}
 			}
@@ -131,6 +159,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	}
 	lb.clientsMutex.RUnlock()
 
+	// TODO: check if we can do this part without locks - already using sync.Once, cancelling context multiple times does not panic
 	if len(clientsToRemove) > 0 {
 		lb.clientsMutex.Lock()
 		for _, client := range clientsToRemove {
@@ -145,17 +174,15 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 }
 
 // poll redis, dedup leaderboard values, push to broadcast to all clients
-func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
+func (lb *LeaderboardBroadcaster) detectLeaderboardChanges(ticks <-chan time.Time) {
 	defer lb.wg.Done()
-	ticker := time.NewTicker(time.Duration(config.AppConfig.Server.PollingIntervalSeconds) * time.Second)
-	defer ticker.Stop()
 
 	var lastHash [32]byte
 
 	for {
 		select {
-		case <-ticker.C:
-			results, err := lb.store.GetTopNPlayers(lb.ctx, int64(config.AppConfig.Leaderboard.TopPlayersLimit))
+		case <-ticks:
+			results, err := lb.store.GetTopNPlayers(lb.ctx, int64(lb.cfg.TopPlayersLimit))
 			if err != nil {
 				metrics.RedisOperationErrors.WithLabelValues("get_top_players").Inc()
 				config.Error("Failed to fetch leaderboard from Redis.", map[string]any{"Error": err, "source": "/stream-leaderboard"})
@@ -179,7 +206,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 					Data: jsonData,
 					Hash: currentHash,
 				}
-				lb.broadcastToAllClients(update)
+				lb.broadcastToAllClients(&update)
 			}
 		case <-lb.ctx.Done():
 			return
@@ -202,7 +229,8 @@ func (lb *LeaderboardBroadcaster) StreamLeaderboard(c *gin.Context) {
 	client, channel := lb.AddClient()
 	defer lb.RemoveClient(client)
 
-	heartbeatTicker := time.NewTicker(time.Duration(config.AppConfig.Server.HeartbeatIntervalSeconds) * time.Second)
+	// TODO: change the type of heartbeatinterval to time.Duration - no need for time.second
+	heartbeatTicker := time.NewTicker(time.Duration(lb.cfg.HeartbeatIntervalSeconds) * time.Second)
 	defer heartbeatTicker.Stop()
 
 	for {
