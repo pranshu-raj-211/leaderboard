@@ -10,7 +10,7 @@ import (
 
 func GetLeaderboard(store interfaces.LeaderboardStore, limit int64) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Use n=0 if we want to get the whole leaderbord (0, -1)
+		// Use limit=0 if we want to get the whole leaderboard (0, -1)
 		results, err := store.GetTopNPlayers(ctx, limit)
 		if err != nil {
 			config.Error("Could not fetch leaderboard from Redis", map[string]any{"Error": err})

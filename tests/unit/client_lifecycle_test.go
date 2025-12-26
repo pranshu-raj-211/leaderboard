@@ -18,7 +18,7 @@ func TestAddClient(t *testing.T) {
 	client, ch := lb.AddClient()
 
 	if client.ID != 1 {
-		t.Fatalf("expected client ID to be 0, got %d", client.ID)
+		t.Fatalf("expected client ID to be 1, got %d", client.ID)
 	}
 
 	if count := lb.CountClients(); count != 1 {
@@ -61,5 +61,5 @@ func TestRemoveClient(t *testing.T) {
 // create multiple clients, force updates using the BroadcastNow func, check if messages are same
 
 // func TestBroadcast(t *testing.T){
-	
+
 // }

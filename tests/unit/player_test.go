@@ -34,7 +34,7 @@ func TestPlayer_Success(t *testing.T) {
 		t.Fatalf("error while unmarshaling response: %v", err)
 	}
 
-	if !(store.timesCalled == 1) {
+	if store.timesCalled != 1 {
 		t.Fatalf("expected store to be called, timesCalled is %d", store.timesCalled)
 	}
 

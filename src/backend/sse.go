@@ -64,10 +64,13 @@ func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore, cfg *Broadc
 	}
 
 	ticker := time.NewTicker(time.Duration(lb.cfg.PollingIntervalSeconds) * time.Second)
-	defer ticker.Stop()
 
 	lb.wg.Add(1)
-	go lb.detectLeaderboardChanges(ticker.C)
+	go func() {
+		defer ticker.Stop()
+		lb.detectLeaderboardChanges(ticker.C)
+	}()
+
 	return lb
 }
 
