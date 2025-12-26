@@ -63,12 +63,16 @@ func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore, cfg *Broadc
 		cfg:     *cfg,
 	}
 
+	ticker := time.NewTicker(time.Duration(lb.cfg.PollingIntervalSeconds) * time.Second)
+	defer ticker.Stop()
+
 	lb.wg.Add(1)
-	go lb.detectLeaderboardChanges()
+	go lb.detectLeaderboardChanges(ticker.C)
 	return lb
 }
 
 // TODO: should have an endpoint, with proper auth - admin only
+// TODO: how to use this along with graceful shutdown
 func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	lb.cancel()
 	lb.wg.Wait()
@@ -112,8 +116,20 @@ func (lb *LeaderboardBroadcaster) RemoveClient(client *Client) {
 	}
 }
 
+// counts the active number of clients, replace later with a field in broadcaster struct
+func (lb *LeaderboardBroadcaster) CountClients() int {
+	lb.clientsMutex.RLock()
+	defer lb.clientsMutex.RUnlock()
+	return int(len(lb.clients))
+}
+
+// to be used only for testing purposes
+func (lb *LeaderboardBroadcaster) BroadcastNow(update *LeaderboardUpdate) {
+	lb.broadcastToAllClients(update)
+}
+
 // broadcastToAllClients sends an update to all connected clients
-func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate) {
+func (lb *LeaderboardBroadcaster) broadcastToAllClients(update *LeaderboardUpdate) {
 	lb.clientsMutex.RLock()
 
 	var clientsToRemove []*Client
@@ -121,7 +137,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	// what to do in case Client channel is full, skip this client (to be changed later - add channel clearing mechanism + alerting)
 	for _, client := range lb.clients {
 		select {
-		case client.channel <- update:
+		case client.channel <- *update:
 		case <-client.ctx.Done():
 			clientsToRemove = append(clientsToRemove, client)
 		default:
@@ -132,7 +148,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 				select {
 				case <-client.channel:
 				default:
-					client.channel <- update
+					client.channel <- *update
 					break drainLoop
 				}
 			}
@@ -140,6 +156,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 	}
 	lb.clientsMutex.RUnlock()
 
+	// TODO: check if we can do this part without locks - already using sync.Once, cancelling context multiple times does not panic
 	if len(clientsToRemove) > 0 {
 		lb.clientsMutex.Lock()
 		for _, client := range clientsToRemove {
@@ -154,16 +171,14 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update LeaderboardUpdate
 }
 
 // poll redis, dedup leaderboard values, push to broadcast to all clients
-func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
+func (lb *LeaderboardBroadcaster) detectLeaderboardChanges(ticks <-chan time.Time) {
 	defer lb.wg.Done()
-	ticker := time.NewTicker(time.Duration(lb.cfg.PollingIntervalSeconds) * time.Second)
-	defer ticker.Stop()
 
 	var lastHash [32]byte
 
 	for {
 		select {
-		case <-ticker.C:
+		case <-ticks:
 			results, err := lb.store.GetTopNPlayers(lb.ctx, int64(lb.cfg.TopPlayersLimit))
 			if err != nil {
 				metrics.RedisOperationErrors.WithLabelValues("get_top_players").Inc()
@@ -188,7 +203,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 					Data: jsonData,
 					Hash: currentHash,
 				}
-				lb.broadcastToAllClients(update)
+				lb.broadcastToAllClients(&update)
 			}
 		case <-lb.ctx.Done():
 			return
