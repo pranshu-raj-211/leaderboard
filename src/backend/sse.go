@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"leaderboard/src/config"
+	"leaderboard/src/interfaces"
 	"leaderboard/src/metrics"
-	"leaderboard/src/redisclient"
 	"sync"
 	"time"
 
@@ -34,6 +34,7 @@ type LeaderboardBroadcaster struct {
 	cancel        context.CancelFunc
 	wg            sync.WaitGroup
 	clientCounter int64
+	store         interfaces.LeaderboardStore
 }
 
 // CreateLeaderboardBroadcaster creates and returns a new LeaderboardBroadcaster.
@@ -43,13 +44,14 @@ type LeaderboardBroadcaster struct {
 // leaderboard changes. A background goroutine running detectLeaderboardChanges
 // is started before this function returns. Call StopBroadcast on the returned
 // broadcaster to cancel the background work and clean up connected clients.
-func CreateLeaderboardBroadcaster() *LeaderboardBroadcaster {
+func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore) *LeaderboardBroadcaster {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	lb := &LeaderboardBroadcaster{
 		clients: make(map[int64]*Client),
 		ctx:     ctx,
 		cancel:  cancel,
+		store:   store,
 	}
 
 	lb.wg.Add(1)
@@ -153,7 +155,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges() {
 	for {
 		select {
 		case <-ticker.C:
-			results, err := redisclient.GetTopNPlayers(lb.ctx, "leaderboard", int64(config.AppConfig.Leaderboard.TopPlayersLimit))
+			results, err := lb.store.GetTopNPlayers(lb.ctx, int64(config.AppConfig.Leaderboard.TopPlayersLimit))
 			if err != nil {
 				metrics.RedisOperationErrors.WithLabelValues("get_top_players").Inc()
 				config.Error("Failed to fetch leaderboard from Redis.", map[string]any{"Error": err, "source": "/stream-leaderboard"})

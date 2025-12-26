@@ -1,8 +1,8 @@
 package backend
 
 import (
-	"context"
 	"leaderboard/src/config"
+	"leaderboard/src/interfaces"
 	"leaderboard/src/metrics"
 	"leaderboard/src/models"
 	"net/http"
@@ -15,12 +15,7 @@ import (
 //
 // On invalid JSON the handler responds with HTTP 400 and an error message. If updating the leaderboard fails
 // it responds with HTTP 400 and the underlying error message. On success it responds with HTTP 200.
-
-type SortedSetStore interface {
-	UpdateLeaderboard(ctx context.Context, player1ID string, player2ID string, result int) error
-}
-
-func SubmitGameResults(store SortedSetStore) gin.HandlerFunc {
+func SubmitGameResults(store interfaces.LeaderboardStore) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var game models.GameResult
 		if err := c.ShouldBindJSON(&game); err != nil {
