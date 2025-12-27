@@ -1,9 +1,12 @@
 # Real-time Game Leaderboard
 
-Blogs on this project
+Blogs on this project - [link](https://blog.pranshu-raj.me/tags/leaderboard/)
+
+Some recent posts on this:
+- [Breaking the 28k connection barrier](https://blog.pranshu-raj.me/posts/scaling-sse-1m-connections)
 - [28k+ conns, zero messages](https://blog.pranshu-raj.me/posts/implementing-correct-fanout)
 - [Optimizing docker image builds](https://blog.pranshu-raj.me/posts/optimizing-docker-builds)
-- (Upcoming) [Backpressure](https://blog.pranshu-raj.me/posts/understanding-backpressure/)
+- [Backpressure](https://blog.pranshu-raj.me/posts/understanding-backpressure/)
 
 
 A high-performance real-time game leaderboard system built with Go, Redis, and Server-Sent Events (SSE).
@@ -19,11 +22,9 @@ A high-performance real-time game leaderboard system built with Go, Redis, and S
 - Docker compose based
 - Grafana based dashboard (configured through `yaml` and `json` - no setup needed)
 
-## Prerequisites
+## Prerequisites to run
 
 - Docker (and Docker Compose)
-
-For the dev environment it's good to have Go 1.24 installed.
 
 ## Quick Start
 
@@ -46,6 +47,8 @@ Dev: Install dependencies
 go mod download
 ```
 
+Currently using Go `1.23.4`
+
 (Optional) Configure the application in `config.yaml`:
 
 To checkout the Grafana dashboard, run the app and go to `http://localhost:3000`, login with the default Grafana username and password (admin).
@@ -53,6 +56,9 @@ To checkout the Grafana dashboard, run the app and go to `http://localhost:3000`
 ## API Endpoints
 
 ### Submit Game Results
+see `src/backend/submit_game.go`
+
+Submits a game result JSON to the app, to simulate game servers sending game results.
 
 ```http
 POST /submit-game
@@ -68,24 +74,36 @@ Content-Type: application/json
 ```
 
 ### Get Leaderboard
+see `src/backend/leaderboard.go`
+
+Gets a snapshot of the leaderboard at that instant.
 
 ```http
 GET /leaderboard
 ```
 
 ### Get Player Stats
+see `src/backend/player.go`
+
+See the rank and score of a player by their id.
 
 ```http
 GET /player/:id/stats
 ```
 
 ### Stream Real-time Updates
+see `src/backend/sse.go`
+
+Stream leaderboard updates periodically to the client connection.
 
 ```http
 GET /stream-leaderboard
 ```
 
 ### Prometheus Metrics
+see `src/metrics/metrics.go`
+
+For prometheus connection.
 
 ```http
 GET /metrics
@@ -114,9 +132,10 @@ leaderboard/
 │   ├── metrics/     # Prometheus metrics
 │   ├── models/      # Data models
 │   ├── redisclient/ # Redis operations
+|   ├── interfaces/  # interfaces - store and broadcaster
 │   └── main.go      # Application entry point
 |── tests/
-|   |──load/         # Load testing scripts
+|   |── unit/        # unit testing scripts
 ├── config.yaml      # Configuration file
 ├── go.mod           # Go module file
 └── README.md        # This file
@@ -127,17 +146,17 @@ To load test the application, first spin up the app using docker compose.
 
 `docker compose up --build`
 
-Then in a separate shell, after the compose app is up and running:
+Then in a separate shell, after the compose app is up and running, run the client docker containers using the command
 
 ```bash
-# POST requests done through HTTP
-go run tests/load/submitter/submit.go
-
-# and in another shell, for streaming responses - SSE clients
-go run tests/load/streamer/stream.go
+docker run -d --name client1 --network=leaderboard_internal sseclient:0.2 -ip=leaderboard -conn=20000
 ```
 
-By default these will run with the default number of submitters as 10, SSE clients as 20000. On a Fedora Linux machine with 8GB RAM, this runs comfortably, with memory usage maxing out at 6.8GB.
+The image needs to be built before though, from the Dockerfile in the `client` directory.
+
+---
+
+The server and client containers on a single machine reaches up to 150k concurrent SSE connections, which is documented in [this blog](https://blog.pranshu-raj.me/posts/scaling-sse-1m-connections/). At this point we hit memory limits (testing on a Linux laptop with 8GB RAM, so results may not be consistent each time as with laptops). This was tested without game servers submitting results, which isn't a very realistic benchmark.
 
 [Post with Grafana dashboard - 28231 active SSE conns](https://x.com/seigino99707047/status/1955225344744583581)
 
@@ -147,17 +166,6 @@ Combined streamer and submitter scripts have not been tested beyond this limit, 
 
 The streaming script is based off of [Eran Yanay's repo for his Gophercon talk](https://github.com/eranyanay/1m-go-websockets).
 
-## TODO
-
-- [ ] Add authentication (necessary for server)
-- [ ] Create comprehensive API documentation
-- [ ] Tests
-- [ ] Implement data persistence backup and aggregation (Postgres, currently in the works)
-- [ ] Add request validation middleware
-- [ ] Add player history tracking (and translate ids to usernames before sending)
-- [ ] Improve metrics and dashboard configs (quantiles)
-- [ ] Redis pipelining and connection pooling (improve other access patterns)
-
 ## Ideas to check out
 
 1. Securing docker containers
@@ -166,7 +174,7 @@ The streaming script is based off of [Eran Yanay's repo for his Gophercon talk](
 ## Interesting things I learnt while working on this
 
 1. Docker build optimixation - [blog](https://blog.pranshu-raj.me/posts/optimizing-docker-builds/)
-2. Grafana dashboard config for persistence across builds (blog on this soon)
+2. Grafana dashboard config for persistence across builds (done - blog on this soon)
 3. Mutexes, race conditions (got to see these happen in my code)
 4. Go concurrency - goroutines and channels (and actors)
 

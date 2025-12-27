@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"leaderboard/src/backend"
 	"leaderboard/src/config"
-	"leaderboard/src/interfaces"
 	"leaderboard/src/metrics"
 	"leaderboard/src/redisclient"
 
@@ -25,9 +24,9 @@ func main() {
 	})
 
 	cfg := &backend.BroadcasterConfig{
-		BroadcastBufferSize: config.AppConfig.Server.BroadcastBufferSize,
-		PollingIntervalSeconds: config.AppConfig.Leaderboard.UpdateIntervalSecs,
-		TopPlayersLimit: config.AppConfig.Leaderboard.TopPlayersLimit,
+		BroadcastBufferSize:      config.AppConfig.Server.BroadcastBufferSize,
+		PollingIntervalSeconds:   config.AppConfig.Leaderboard.UpdateIntervalSecs,
+		TopPlayersLimit:          config.AppConfig.Leaderboard.TopPlayersLimit,
 		HeartbeatIntervalSeconds: config.AppConfig.Server.HeartbeatIntervalSeconds,
 	}
 
@@ -40,8 +39,10 @@ func main() {
 
 	store := redisclient.CreateRedisLeaderboard(client)
 
-	// TODO: checkout why to prefer broadcast interface here
-	var lb interfaces.Broadcaster = backend.CreateLeaderboardBroadcaster(store, cfg)
+	lb, err := backend.CreateLeaderboardBroadcaster(store, cfg)
+	if err != nil {
+		config.Fatal("incorrect config passed to leaderboard constructor", map[string]any{"err": err})
+	}
 	defer lb.StopBroadcast()
 
 	r := gin.Default()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"leaderboard/src/config"
 	"leaderboard/src/interfaces"
@@ -52,7 +53,10 @@ type BroadcasterConfig struct {
 // leaderboard changes. A background goroutine running detectLeaderboardChanges
 // is started before this function returns. Call StopBroadcast on the returned
 // broadcaster to cancel the background work and clean up connected clients.
-func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore, cfg *BroadcasterConfig) *LeaderboardBroadcaster {
+func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore, cfg *BroadcasterConfig) (*LeaderboardBroadcaster, error) {
+	if cfg == nil {
+		return nil, errors.New("config cannot be nil")
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 
 	lb := &LeaderboardBroadcaster{
@@ -71,7 +75,7 @@ func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore, cfg *Broadc
 		lb.detectLeaderboardChanges(ticker.C)
 	}()
 
-	return lb
+	return lb, nil
 }
 
 // TODO: should have an endpoint, with proper auth - admin only
@@ -123,7 +127,7 @@ func (lb *LeaderboardBroadcaster) RemoveClient(client *Client) {
 func (lb *LeaderboardBroadcaster) CountClients() int {
 	lb.clientsMutex.RLock()
 	defer lb.clientsMutex.RUnlock()
-	return int(len(lb.clients))
+	return len(lb.clients)
 }
 
 // to be used only for testing purposes
