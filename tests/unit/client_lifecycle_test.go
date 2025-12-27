@@ -14,7 +14,10 @@ func TestAddClient(t *testing.T) {
 		HeartbeatIntervalSeconds: 5,
 	}
 
-	lb := backend.CreateLeaderboardBroadcaster(store, cfg)
+	lb, err := backend.CreateLeaderboardBroadcaster(store, cfg)
+	if err != nil {
+		t.Fatalf("incorrect config passed to leaderboard constructor")
+	}
 	client, ch := lb.AddClient()
 
 	if client.ID != 1 {
@@ -41,7 +44,10 @@ func TestRemoveClient(t *testing.T) {
 		HeartbeatIntervalSeconds: 5,
 	}
 
-	lb := backend.CreateLeaderboardBroadcaster(store, cfg)
+	lb, err := backend.CreateLeaderboardBroadcaster(store, cfg)
+	if err != nil {
+		t.Fatalf("incorrect config passed to leaderboard constructor")
+	}
 	client, ch := lb.AddClient()
 
 	lb.RemoveClient(client)
