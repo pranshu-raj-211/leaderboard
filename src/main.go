@@ -78,12 +78,12 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	// kill (no params) by default sends syscall.SIGTERM
 	// kill -2 is syscall.SIGINT
-	// kill -9 is syscall.SIGKILL but can't be caught, so don't need add it
+	// kill -9 is syscall.SIGKILL but can't be caught, so don't need it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	config.Info("Shutdown signal received, gracefully shutting down server...", map[string]any{})
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.AppConfig.Server.GracefulShutdownTimeoutSeconds))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.AppConfig.Server.GracefulShutdownTimeoutSeconds)*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
