@@ -90,6 +90,7 @@ func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	for _, client := range lb.clients {
 		client.cancel()
 		client.closeOnce.Do(func() { close(client.channel) })
+		delete(lb.clients, client.ID)
 	}
 }
 

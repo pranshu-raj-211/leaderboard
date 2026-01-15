@@ -49,7 +49,6 @@ func main() {
 	if err != nil {
 		config.Fatal("incorrect config passed to leaderboard constructor", map[string]any{"err": err})
 	}
-	defer lb.StopBroadcast()
 
 	r := gin.Default()
 
