@@ -18,11 +18,12 @@ type Config struct {
 	} `yaml:"redis"`
 
 	Server struct {
-		Port                   int    `yaml:"port"`
-		Host                   string `yaml:"host"`
-		BroadcastBufferSize    int    `yaml:"broadcast_buffer_size"`
-		PollingIntervalSeconds int    `yaml:"polling_interval_seconds"`
-		HeartbeatIntervalSeconds int `yaml:"heartbeat_interval_seconds"`
+		Port                           int    `yaml:"port"`
+		Host                           string `yaml:"host"`
+		BroadcastBufferSize            int    `yaml:"broadcast_buffer_size"`
+		PollingIntervalSeconds         int    `yaml:"polling_interval_seconds"`
+		HeartbeatIntervalSeconds       int    `yaml:"heartbeat_interval_seconds"`
+		GracefulShutdownTimeoutSeconds int    `yaml:"graceful_shutdown_timeout_seconds"`
 	} `yaml:"server"`
 
 	Leaderboard struct {

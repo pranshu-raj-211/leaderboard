@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"leaderboard/src/backend"
 	"leaderboard/src/config"
 	"leaderboard/src/metrics"
 	"leaderboard/src/redisclient"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -57,7 +63,33 @@ func main() {
 
 	address := fmt.Sprintf("%s:%d", config.AppConfig.Server.Host, config.AppConfig.Server.Port)
 
-	if err := r.Run(address); err != nil {
-		config.Fatal("failed to start server", map[string]any{"err": err})
+	srv := &http.Server{
+		Addr:    address,
+		Handler: r,
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			config.Fatal("listen error", map[string]any{"err": err})
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout
+	quit := make(chan os.Signal, 1)
+	// kill (no params) by default sends syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be caught, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	config.Info("Shutdown signal received, gracefully shutting down server...", map[string]any{})
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.AppConfig.Server.GracefulShutdownTimeoutSeconds))
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		config.Error("Server forced to shutdown", map[string]any{"err": err})
+	}
+
+	lb.StopBroadcast()
+	config.Info("Server exiting", map[string]any{})
 }
