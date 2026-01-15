@@ -78,8 +78,8 @@ func CreateLeaderboardBroadcaster(store interfaces.LeaderboardStore, cfg *Broadc
 	return lb, nil
 }
 
-// TODO: should have an endpoint, with proper auth - admin only
-// TODO: how to use this along with graceful shutdown
+// Removes all client connections, cleans up client channels, stopping the broadcast
+// currently being used only with the graceful shutdown option in main.go
 func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	lb.cancel()
 	lb.wg.Wait()
@@ -90,6 +90,7 @@ func (lb *LeaderboardBroadcaster) StopBroadcast() {
 	for _, client := range lb.clients {
 		client.cancel()
 		client.closeOnce.Do(func() { close(client.channel) })
+		delete(lb.clients, client.ID)
 	}
 }
 
@@ -111,7 +112,7 @@ func (lb *LeaderboardBroadcaster) AddClient() (*Client, <-chan LeaderboardUpdate
 	return client, client.channel
 }
 
-// remove specific client channel - closed connection
+// Remove a specific client which closed its connection to the server
 func (lb *LeaderboardBroadcaster) RemoveClient(client *Client) {
 	lb.clientsMutex.Lock()
 	defer lb.clientsMutex.Unlock()
@@ -123,19 +124,19 @@ func (lb *LeaderboardBroadcaster) RemoveClient(client *Client) {
 	}
 }
 
-// counts the active number of clients, replace later with a field in broadcaster struct
+// Counts the active number of clients, replace later with a field in broadcaster struct
 func (lb *LeaderboardBroadcaster) CountClients() int {
 	lb.clientsMutex.RLock()
 	defer lb.clientsMutex.RUnlock()
 	return len(lb.clients)
 }
 
-// to be used only for testing purposes
+// Force sends an update to all clients, intended for testing use
 func (lb *LeaderboardBroadcaster) BroadcastNow(update *LeaderboardUpdate) {
 	lb.broadcastToAllClients(update)
 }
 
-// broadcastToAllClients sends an update to all connected clients
+// Sends an update to all connected clients
 func (lb *LeaderboardBroadcaster) broadcastToAllClients(update *LeaderboardUpdate) {
 	lb.clientsMutex.RLock()
 
@@ -177,7 +178,7 @@ func (lb *LeaderboardBroadcaster) broadcastToAllClients(update *LeaderboardUpdat
 	}
 }
 
-// poll redis, dedup leaderboard values, push to broadcast to all clients
+// Poll redis, dedup leaderboard state, push to broadcast to all clients
 func (lb *LeaderboardBroadcaster) detectLeaderboardChanges(ticks <-chan time.Time) {
 	defer lb.wg.Done()
 
@@ -218,7 +219,7 @@ func (lb *LeaderboardBroadcaster) detectLeaderboardChanges(ticks <-chan time.Tim
 	}
 }
 
-// handler for /stream-leaderboard
+// Handler for /stream-leaderboard endpoint
 func (lb *LeaderboardBroadcaster) StreamLeaderboard(c *gin.Context) {
 	c.Writer.Header().Set("Content-Type", "text/event-stream")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
