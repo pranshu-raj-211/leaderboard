@@ -31,6 +31,8 @@ type Config struct {
 		TopPlayersLimit    int `yaml:"top_players_limit"`
 		CacheExpiryMins    int `yaml:"cache_expiry_mins"`
 	} `yaml:"leaderboard"`
+
+	MetricsEnabled bool `yaml:"metrics_enabled"`
 }
 
 var AppConfig *Config

@@ -13,3 +13,4 @@ server:
 leaderboard:
   update_interval_secs: 5
   top_players_limit: 10
+metrics_enabled: false
