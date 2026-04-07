@@ -56,9 +56,11 @@ func main() {
 
 	r.POST("/submit-game", backend.SubmitGameResults(store))
 	r.GET("/stream-leaderboard", lb.StreamLeaderboard)
-	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	r.GET("/player/:id/stats", backend.GetPlayerResults(store))
 	r.GET("/leaderboard", backend.GetLeaderboard(store, int64(config.AppConfig.Leaderboard.TopPlayersLimit)))
+	if config.AppConfig.MetricsEnabled{
+		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	}
 
 	address := fmt.Sprintf("%s:%d", config.AppConfig.Server.Host, config.AppConfig.Server.Port)
 

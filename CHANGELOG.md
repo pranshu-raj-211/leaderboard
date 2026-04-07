@@ -1,3 +1,6 @@
+2026-04-07
+- Add no metrics mode using a config feature flag (don't register metrics, don't expose endpoint, no containers for prom and grafana)
+
 2025-12-27
 - Update README to latest state
 - Add a github actions workflow to run tests at each pull request to main
