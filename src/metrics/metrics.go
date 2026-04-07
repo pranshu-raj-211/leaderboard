@@ -138,6 +138,9 @@ var (
 )
 
 func InitMetrics() {
+	if !config.AppConfig.MetricsEnabled {
+		return
+	}
 	metrics := []prometheus.Collector{
 		GameSubmissions,
 		ActiveSSEConnections,
