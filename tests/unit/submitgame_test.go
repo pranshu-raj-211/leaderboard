@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"leaderboard/src/models"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -13,19 +11,16 @@ func TestSubmitGameResults_Success(t *testing.T) {
 	store := &fakeLeaderboardStore{}
 	r := CreateTestRouter(store)
 
-	w := httptest.NewRecorder()
 	gameResult := &models.GameResult{GameID: "12", ServerID: "54", Player1ID: "1", Player2ID: "2", Result: 2}
 	gameJSON, _ := json.Marshal(gameResult)
-	req, _ := http.NewRequest("POST", "/submit-game", strings.NewReader(string(gameJSON)))
-
-	r.ServeHTTP(w, req)
+	w := performRequest(r, "POST", "/submit-game", string(gameJSON))
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status code 200, got %d", w.Code)
 	}
 
-	if !(store.timesCalled == 1) {
-		t.Fatalf("expected store to be called, timesCalled is %d", store.timesCalled)
+	if got := store.callCount("UpdateLeaderboard"); got != 1 {
+		t.Fatalf("expected UpdateLeaderboard to be called once, got %d", got)
 	}
 
 	if store.player1ID != "1" || store.player2ID != "2" || store.result != 2 {
@@ -86,18 +81,16 @@ func TestSubmitGameResults_Failure(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			store := &fakeLeaderboardStore{}
 			r := CreateTestRouter(store)
-			w := httptest.NewRecorder()
 
-			req, _ := http.NewRequest("POST", "/submit-game", strings.NewReader(testCase.gameResult))
-			r.ServeHTTP(w, req)
+			w := performRequest(r, "POST", "/submit-game", testCase.gameResult)
 
 			// failure cases - want these requests to fail
 			if w.Code == http.StatusOK {
 				t.Fatalf("expected status code not equal to 200")
 			}
 
-			if store.timesCalled > 0 {
-				t.Fatalf("store should not be called in failure, called %d times", store.timesCalled)
+			if got := store.totalCalls(); got > 0 {
+				t.Fatalf("store should not be called in failure, called %d times", got)
 			}
 		})
 	}

@@ -13,6 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const playerNamesKey = "player_names"
+
 type RedisLeaderboard struct {
 	client *redis.Client
 }
@@ -96,19 +98,79 @@ func (store *RedisLeaderboard) GetTopNPlayers(ctx context.Context, limit int64) 
 		return nil, config.Error("Failed to fetch top n players", map[string]any{"Error": err})
 	}
 	entries := make([]interfaces.LeaderboardEntry, 0, len(zs))
+	ids := make([]string, 0, len(zs))
 	for _, z := range zs {
 		playerID, ok := z.Member.(string)
 		if !ok {
 			return nil, fmt.Errorf("invalid redis member type")
 		}
-
+		ids = append(ids, playerID)
 		entries = append(entries, interfaces.LeaderboardEntry{
 			PlayerID: playerID,
 			Score:    z.Score,
 		})
 	}
 
+	names, err := store.GetPlayerNames(ctx, ids)
+	if err != nil {
+		config.Error("Failed to resolve player names for leaderboard", map[string]any{"Error": err})
+	} else {
+		for i := range entries {
+			entries[i].Name = names[entries[i].PlayerID]
+		}
+	}
+
 	return entries, nil
+}
+
+// Writes the display name for a player ID.
+func (store *RedisLeaderboard) SetPlayerName(ctx context.Context, playerID string, name string) error {
+	start := time.Now()
+	err := store.client.HSet(ctx, playerNamesKey, playerID, name).Err()
+	metrics.RedisLatency.Observe(time.Since(start).Seconds())
+	if err != nil {
+		metrics.RedisOperationErrors.WithLabelValues("set_player_name").Inc()
+		return config.Error("Failed to set player name", map[string]any{"Error": err, "player_id": playerID})
+	}
+	return nil
+}
+
+// Returns the display name for a player ID, empty string if unset.
+func (store *RedisLeaderboard) GetPlayerName(ctx context.Context, playerID string) (string, error) {
+	start := time.Now()
+	name, err := store.client.HGet(ctx, playerNamesKey, playerID).Result()
+	metrics.RedisLatency.Observe(time.Since(start).Seconds())
+	if errors.Is(err, redis.Nil) {
+		return "", nil
+	}
+	if err != nil {
+		metrics.RedisOperationErrors.WithLabelValues("get_player_name").Inc()
+		return "", config.Error("Failed to get player name", map[string]any{"Error": err, "player_id": playerID})
+	}
+	return name, nil
+}
+
+// Batch resolves display names via a single HMGet. IDs without a stored name are omitted from the returned map.
+func (store *RedisLeaderboard) GetPlayerNames(ctx context.Context, playerIDs []string) (map[string]string, error) {
+	names := make(map[string]string, len(playerIDs))
+	if len(playerIDs) == 0 {
+		return names, nil
+	}
+
+	start := time.Now()
+	vals, err := store.client.HMGet(ctx, playerNamesKey, playerIDs...).Result()
+	metrics.RedisLatency.Observe(time.Since(start).Seconds())
+	if err != nil {
+		metrics.RedisOperationErrors.WithLabelValues("get_player_names").Inc()
+		return nil, config.Error("Failed to batch-get player names", map[string]any{"Error": err})
+	}
+
+	for i, v := range vals {
+		if name, ok := v.(string); ok {
+			names[playerIDs[i]] = name
+		}
+	}
+	return names, nil
 }
 
 // GetPlayerScore returns the leaderboard rank and score for the given player ID in the specified sorted set key.

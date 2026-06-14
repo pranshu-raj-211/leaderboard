@@ -13,4 +13,10 @@ server:
 leaderboard:
   update_interval_secs: 5
   top_players_limit: 10
+simulator:
+  enabled: true
+  num_players: 50
+  tick_interval_millis: 500
+  max_concurrent_matches: 5
+  seed: 42
 metrics_enabled: false

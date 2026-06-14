@@ -1,3 +1,10 @@
+2026-06-15
+- Add match simulator that seeds randomly-named players and plays random concurrent matches, producing real write traffic (previously the system only had a reader path)
+- Store player ID - uname in a Redis hash, read APIs leaderboard, player-stats, and SSE reads now return both `player_id` and `name`
+- Add `POST /players` endpoint to register/rename a player
+- Add `Player` model + validation, batch name resolution (`GetPlayerNames` via HMGET) on leaderboard reads
+- Tests for player registration; update fake store and player-stats test for the name lookup
+
 2026-04-07
 - Add no metrics mode using a config feature flag (don't register metrics, don't expose endpoint, no containers for prom and grafana)
 

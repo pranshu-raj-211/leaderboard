@@ -7,6 +7,7 @@ import (
 	"leaderboard/src/config"
 	"leaderboard/src/metrics"
 	"leaderboard/src/redisclient"
+	"leaderboard/src/simulator"
 	"net/http"
 	"os"
 	"os/signal"
@@ -50,11 +51,21 @@ func main() {
 		config.Fatal("incorrect config passed to leaderboard constructor", map[string]any{"err": err})
 	}
 
+	sim := simulator.New(store, simulator.Config{
+		Enabled:            config.AppConfig.Simulator.Enabled,
+		NumPlayers:         config.AppConfig.Simulator.NumPlayers,
+		TickIntervalMillis: config.AppConfig.Simulator.TickIntervalMillis,
+		MaxConcurrent:      config.AppConfig.Simulator.MaxConcurrent,
+		Seed:               config.AppConfig.Simulator.Seed,
+	})
+	sim.Start()
+
 	r := gin.Default()
 
 	r.Use(metrics.MetricsMiddleware())
 
 	r.POST("/submit-game", backend.SubmitGameResults(store))
+	r.POST("/players", backend.RegisterPlayer(store))
 	r.GET("/stream-leaderboard", lb.StreamLeaderboard)
 	r.GET("/player/:id/stats", backend.GetPlayerResults(store))
 	r.GET("/leaderboard", backend.GetLeaderboard(store, int64(config.AppConfig.Leaderboard.TopPlayersLimit)))
@@ -91,6 +102,7 @@ func main() {
 		config.Error("Server forced to shutdown", map[string]any{"err": err})
 	}
 
+	sim.Stop()
 	lb.StopBroadcast()
 	config.Info("Server exiting", map[string]any{})
 }
