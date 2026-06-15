@@ -106,7 +106,7 @@ func (s *Simulator) run() {
 // Plays a random number of matches concurrently.
 func (s *Simulator) playMatches() {
 	s.rngMu.Lock()
-	count := 1 + s.rng.Intn(maxInt(1, s.cfg.MaxConcurrent))
+	count := 1 + s.rng.Intn(maxInt(1, absInt(s.cfg.MaxConcurrent)))
 	s.rngMu.Unlock()
 
 	var wg sync.WaitGroup
@@ -152,4 +152,11 @@ func maxInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func absInt(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
 }
