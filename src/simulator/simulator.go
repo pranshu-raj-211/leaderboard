@@ -35,8 +35,8 @@ type Simulator struct {
 
 func New(store interfaces.LeaderboardStore, cfg Config) *Simulator {
 	ctx, cancel := context.WithCancel(context.Background())
-        if cfg.TickerIntervalMillis < 0 {
-                cfg.TickerIntervalMillis = -cfg.TickerIntervalMillis
+        if cfg.TickIntervalMillis < 0 {
+                cfg.TickIntervalMillis = -cfg.TickIntervalMillis
         }
 	return &Simulator{
 		store:  store,
@@ -57,7 +57,7 @@ func (s *Simulator) Start() {
 		config.Error("Simulator needs at least 2 players, not starting", map[string]any{"num_players": s.cfg.NumPlayers})
 		return
 	}
-        if s.cfg.TickerIntervalMillis == 0 {
+        if s.cfg.TickIntervalMillis == 0 {
                 config.Error("Simulator tick interval must be positive", map[string]any{"tick_ms": s.cfg.TickIntervalMillis})
         }
 
