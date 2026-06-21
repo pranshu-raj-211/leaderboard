@@ -59,6 +59,7 @@ func (s *Simulator) Start() {
 	}
         if s.cfg.TickIntervalMillis == 0 {
                 config.Error("Simulator tick interval must be positive", map[string]any{"tick_ms": s.cfg.TickIntervalMillis})
+                return
         }
 
 	s.seedPlayers()

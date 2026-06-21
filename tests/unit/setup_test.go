@@ -138,7 +138,7 @@ func performRequest(r http.Handler, method, path, body string) *httptest.Respons
 	if body != "" {
 		reader = strings.NewReader(body)
 	}
-	req, _ := httptest.NewRequest(method, path, reader)
+	req := httptest.NewRequest(method, path, reader)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	return w
