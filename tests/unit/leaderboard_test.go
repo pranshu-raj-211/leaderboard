@@ -6,7 +6,6 @@ import (
 	"errors"
 	"leaderboard/src/interfaces"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -21,11 +20,8 @@ func TestLeaderboard_Success(t *testing.T) {
 	}
 	r := CreateTestRouter(store)
 
-	w := httptest.NewRecorder()
 	var resp []interfaces.LeaderboardEntry
-	req, _ := http.NewRequest("GET", "/leaderboard", nil)
-
-	r.ServeHTTP(w, req)
+	w := performRequest(r, "GET", "/leaderboard", "")
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status code 200, got %d", w.Code)
@@ -35,8 +31,8 @@ func TestLeaderboard_Success(t *testing.T) {
 		t.Fatalf("error while unmarshaling response: %v", err)
 	}
 
-	if !(store.timesCalled == 1) {
-		t.Fatalf("expected store to be called, timesCalled is %d", store.timesCalled)
+	if got := store.callCount("GetTopNPlayers"); got != 1 {
+		t.Fatalf("expected GetTopNPlayers to be called once, got %d", got)
 	}
 
 	if len(resp) != 2 {
@@ -60,10 +56,7 @@ func TestLeaderboard_StoreDown(t *testing.T){
 	}
 	r := CreateTestRouter(store)
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/leaderboard", nil)
-
-	r.ServeHTTP(w, req)
+	w := performRequest(r, "GET", "/leaderboard", "")
 
 	if w.Code!=http.StatusInternalServerError{
 		t.Fatalf("expected code 500, got %d", w.Code)

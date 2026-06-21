@@ -73,6 +73,21 @@ Content-Type: application/json
 }
 ```
 
+### Register Player 
+see `src/backend/player.go`
+
+Maps a player ID to a human-readable display name. The name is stored in a Redis hash and is returned alongside the player ID on all reads (this wasn't really needed from a backend pov, but good to see from a user's pov).
+
+```http
+POST /players
+Content-Type: application/json
+
+{
+  "player_id": "player1",
+  "name": "SwiftFalcon"
+}
+```
+
 ### Get Leaderboard
 see `src/backend/leaderboard.go`
 
@@ -82,13 +97,24 @@ Gets a snapshot of the leaderboard at that instant.
 GET /leaderboard
 ```
 
+```json
+[
+  {"player_id": "p_0009", "name": "BlazingFalcon9", "score": 5},
+  {"player_id": "p_0013", "name": "BraveTiger13", "score": 4.5}
+]
+```
+
 ### Get Player Stats
 see `src/backend/player.go`
 
-See the rank and score of a player by their id.
+See the rank, score, and name of a player by their id.
 
 ```http
 GET /player/:id/stats
+```
+
+```json
+{"player_id": "p_0000", "name": "IronFalcon0", "rank": 8, "score": 2.5}
 ```
 
 ### Stream Real-time Updates
@@ -98,6 +124,22 @@ Stream leaderboard updates periodically to the client connection.
 
 ```http
 GET /stream-leaderboard
+```
+
+## Match Simulator (write traffic)
+see `src/simulator/simulator.go`
+
+Previously the system only had a reader path (the SSE broadcaster polling Redis) and nothing wrote game results, so the leaderboard never updated. This is the most important feature for testing, on startup it seeds a pool of random players, then on every tick plays a random number of concurrent matches between random pairs of players, writing the outcome to the write endpoint.
+
+Configured under `simulator:` in `config.yaml`:
+
+```yaml
+simulator:
+  enabled: true
+  num_players: 50
+  tick_interval_millis: 2000
+  max_concurrent_matches: 5
+  seed: 42                      # to satisfy the PRNG gods (deterministic testing)
 ```
 
 ### Prometheus Metrics

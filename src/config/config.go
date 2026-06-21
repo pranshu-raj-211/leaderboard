@@ -32,6 +32,14 @@ type Config struct {
 		CacheExpiryMins    int `yaml:"cache_expiry_mins"`
 	} `yaml:"leaderboard"`
 
+	Simulator struct {
+		Enabled            bool  `yaml:"enabled"`
+		NumPlayers         int   `yaml:"num_players"`
+		TickIntervalMillis int   `yaml:"tick_interval_millis"`
+		MaxConcurrent      int   `yaml:"max_concurrent_matches"`
+		Seed               int64 `yaml:"seed"`
+	} `yaml:"simulator"`
+
 	MetricsEnabled bool `yaml:"metrics_enabled"`
 }
 

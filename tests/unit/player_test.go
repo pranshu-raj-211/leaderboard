@@ -5,26 +5,25 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
 func TestPlayer_Success(t *testing.T) {
 	store := &fakeLeaderboardStore{
+		playerNames: map[string]string{"12": "SwiftFalcon"},
 		GetPlayerScoreFn: func(ctx context.Context, playerID string) (int64, float64, error) {
 			return 1, 2.5, nil
 		},
 	}
 	r := CreateTestRouter(store)
 
-	w := httptest.NewRecorder()
 	var resp struct {
-		Rank  int64
-		Score float64
+		PlayerID string  `json:"player_id"`
+		Name     string  `json:"name"`
+		Rank     int64   `json:"rank"`
+		Score    float64 `json:"score"`
 	}
-	req, _ := http.NewRequest("GET", "/player/12/stats", nil)
-
-	r.ServeHTTP(w, req)
+	w := performRequest(r, "GET", "/player/12/stats", "")
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status code 200, got %d", w.Code)
@@ -34,8 +33,12 @@ func TestPlayer_Success(t *testing.T) {
 		t.Fatalf("error while unmarshaling response: %v", err)
 	}
 
-	if store.timesCalled != 1 {
-		t.Fatalf("expected store to be called, timesCalled is %d", store.timesCalled)
+	// stats handler resolves the score and the display name exactly once each
+	if got := store.callCount("GetPlayerScore"); got != 1 {
+		t.Fatalf("expected GetPlayerScore called once, got %d", got)
+	}
+	if got := store.callCount("GetPlayerName"); got != 1 {
+		t.Fatalf("expected GetPlayerName called once, got %d", got)
 	}
 
 	if resp.Rank != 1 {
@@ -44,6 +47,10 @@ func TestPlayer_Success(t *testing.T) {
 
 	if resp.Score != 2.5 {
 		t.Fatalf("expected score 2.5, got %f", resp.Score)
+	}
+
+	if resp.Name != "SwiftFalcon" {
+		t.Fatalf("expected name SwiftFalcon, got %q", resp.Name)
 	}
 }
 
@@ -55,10 +62,7 @@ func TestPlayer_BadRequest(t *testing.T) {
 	}
 	r := CreateTestRouter(store)
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/player//stats", nil)
-
-	r.ServeHTTP(w, req)
+	w := performRequest(r, "GET", "/player//stats", "")
 
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("expected status code 400, got %d", w.Code)
@@ -73,10 +77,7 @@ func TestPlayer_StoreDown(t *testing.T) {
 	}
 	r := CreateTestRouter(store)
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/player/42/stats", nil)
-
-	r.ServeHTTP(w, req)
+	w := performRequest(r, "GET", "/player/42/stats", "")
 
 	if w.Code != http.StatusInternalServerError {
 		t.Fatalf("expected status code 500, got %d", w.Code)
