@@ -2,6 +2,8 @@ package models
 
 import (
 	"fmt"
+        "strings"
+        "unicode/utf8"
 )
 
 type GameResult struct {
@@ -18,13 +20,13 @@ type Player struct {
 }
 
 func (p *Player) Validate() error {
-	if p.PlayerID == "" {
+	if strings.TrimSpace(p.PlayerID) == "" {
 		return &ValidationError{Field: "player_id", Reason: "empty string not allowed"}
 	}
-	if p.Name == "" {
+	if strings.TrimSpace(p.Name) == "" {
 		return &ValidationError{Field: "name", Reason: "empty string not allowed"}
 	}
-	if len(p.Name) > 64 {
+	if utf8.RuneCountInString(p.Name) > 64 {
 		return &ValidationError{Field: "name", Reason: "name must be at most 64 characters"}
 	}
 	return nil
@@ -40,16 +42,16 @@ func (e *ValidationError) Error() string {
 }
 
 func (g *GameResult) Validate() error {
-	if g.GameID == "" {
+	if strings.TrimSpace(g.GameID) == "" {
 		return &ValidationError{Field:"game_id", Reason:"empty string not allowed"}
 	}
-	if g.Player1ID == g.Player2ID {
+	if strings.TrimSpace(g.Player1ID) == strings.TrimSpace(g.Player2ID) {
 		return &ValidationError{Field: "player_id", Reason: "player ids cannot be the same"}
 	}
 	if g.Result < 0 || g.Result > 2 {
 		return &ValidationError{Field: "result", Reason: "result must be an integer between 0 and 2 inclusive"}
 	}
-	if g.ServerID == "" {
+	if strings.TrimSpace(g.ServerID) == "" {
 		return &ValidationError{Field: "server_id", Reason: "empty string not allowed"}
 	}
 	return nil

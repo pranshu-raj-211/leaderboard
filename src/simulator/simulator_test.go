@@ -6,6 +6,7 @@ import (
 	"leaderboard/src/interfaces"
 	"sync"
 	"testing"
+        "time"
 
 	"go.uber.org/zap"
 )
@@ -141,7 +142,7 @@ func TestStartStopProducesWrites(t *testing.T) {
 	s := newTestSim(store, 6, 3)
 
 	s.Start()
-	// Stop blocks until the loop exits; with a 1ms tick at least one batch runs.
+	time.Sleep(100*time.Millisecond)
 	s.Stop()
 
 	if got := store.nameCount(); got != 6 {

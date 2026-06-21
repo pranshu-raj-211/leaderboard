@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// fakeLeaderboardStore is a concurrency-safe in-memory test double. It records both a total call count (timesCalled, kept for existing assertions) and a per-method count so tests can assert on a specific method without coupling to the total number of store interactions.
+// Concurrency-safe mock. Records total call count and per-method count.
 type fakeLeaderboardStore struct {
 	mu        sync.Mutex
 	calls     map[string]int
@@ -30,7 +30,7 @@ type fakeLeaderboardStore struct {
 	GetTopNPlayersFn func(ctx context.Context, limit int64) ([]interfaces.LeaderboardEntry, error)
 }
 
-// Increments the per-method and total counters under the lock.
+// Increment the per-method and total counters in a concurrency safe manner.
 func (store *fakeLeaderboardStore) record(method string) {
 	if store.calls == nil {
 		store.calls = make(map[string]int)
@@ -45,7 +45,6 @@ func (store *fakeLeaderboardStore) callCount(method string) int {
 	return store.calls[method]
 }
 
-// Returns the number of store method invocations across all methods.
 func (store *fakeLeaderboardStore) totalCalls() int {
 	store.mu.Lock()
 	defer store.mu.Unlock()
@@ -134,13 +133,12 @@ func CreateTestRouter(store interfaces.LeaderboardStore) *gin.Engine {
 	return r
 }
 
-// Builds a request (with an optional body) and serves it against the router, returning the recorder. body may be "" for GET requests.
 func performRequest(r http.Handler, method, path, body string) *httptest.ResponseRecorder {
 	var reader io.Reader
 	if body != "" {
 		reader = strings.NewReader(body)
 	}
-	req, _ := http.NewRequest(method, path, reader)
+	req, _ := httptest.NewRequest(method, path, reader)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	return w
